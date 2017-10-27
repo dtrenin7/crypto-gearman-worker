@@ -6,6 +6,8 @@
 #include <pthread.h>
 #include <string>
 
+#include "crypto.h"
+
 #define GEARMAN_CHECK(x) if(gearman_failed(x)) { *result_size = 0; *result = GEARMAN_ERROR; return NULL; }
 
 void* worker_fn(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
@@ -61,7 +63,7 @@ void *worker_builder( void *ptr ) {
 
 int main(void) {
 
-  printf("Welcome!\n");
+  generate_keys();
 /*    pthread_t threads[THREADS];
     for(int i = 0; i < THREADS; i++)
         if(pthread_create(&threads[i], NULL, worker_builder, NULL)) {
