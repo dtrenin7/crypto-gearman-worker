@@ -1,19 +1,6 @@
-#include <memory>
-#include <vector>
-using std::unique_ptr;
-using std::vector;
-
-#include <openssl/bn.h>
-#include <openssl/rsa.h>
-
-#include <cassert>
-#include <string.h>
-#define ASSERT assert
-
-using BN_ptr = std::unique_ptr<BIGNUM, decltype(&::BN_free)>;
-using RSA_ptr = std::unique_ptr<RSA, decltype(&::RSA_free)>;
-
-typedef unsigned char U8;
+#include "crypto.h"
+#include "cgw-aes.h"
+#include "cgw-rsa.h"
 
 U8* RSA_EncodePublic(RSA* rsa, int* len) {
   U8 *buf, *next;
@@ -40,54 +27,49 @@ RSA* RSA_DecodePrivate(U8* buf, long len) {
 }
 
 void generate_keys() {
-  int rc;
+  // Load the necessary cipher
+  CGW::AES::init();
 
-  RSA_ptr rsa(RSA_new(), ::RSA_free);
-  BN_ptr bn(BN_new(), ::BN_free);
+  // plaintext, ciphertext, recovered text
+  byte_vector ptext = {0xde, 0xad, 0xbe, 0xef},  ctext, rtext;
 
-  rc = BN_set_word(bn.get(), RSA_F4);
-  ASSERT(rc == 1);
+  CGW::AES aes;
+  aes.encrypt(ptext, ctext);
+  aes.decrypt(ctext, rtext);
 
-  rc = RSA_generate_key_ex(rsa.get(), 2048, bn.get(), NULL);
-  ASSERT(rc == 1);
+  printf("\nAES ORIGIN\n");
+  for(int i = 0; i < ptext.size(); i++)
+    printf("%02X ", ptext[i]);
 
-  RSA_ptr rsa_pub(RSAPublicKey_dup(rsa.get()), ::RSA_free);
-  RSA_ptr rsa_priv(RSAPrivateKey_dup(rsa.get()), ::RSA_free);
+  printf("\nAES ENCODED\n");
+  for(int i = 0; i < ctext.size(); i++)
+    printf("%02X ", ctext[i]);
 
-  int len = 0;
-  U8* pub = RSA_EncodePublic(rsa_pub.get(), &len);
-  printf("PUB LEN = %ld", len);
-  // dump public key from RSA struct into binary array
+  printf("\nAES DECODED\n");
+  for(int i = 0; i < rtext.size(); i++)
+    printf("%02X ", rtext[i]);
 
-  RSA* pub2 = RSA_DecodePublic(pub, len);
-  // make RSA struct with public key from binary array
+  //==========================================================
 
-  for(int i = 0; i < len; i++)
-    printf("%02X ", pub[i]);
+  CGW::RSA_pair pair;
+  CGW::RSA_public p(pair.get_public());
+  CGW::RSA_private pr(pair.get_private());
+  byte_vector p_array, pr_array;
+  p.serialize(p_array);
+  pr.serialize(pr_array);
+
+  CGW::RSA_public p_copy(&p_array[0], p_array.size());
+  CGW::RSA_private pr_copy(&pr_array[0], pr_array.size());
 
   printf("\nPUBLIC ORIGIN\n");
-  RSA_print_fp(stdout, rsa_pub.get(), 0);
+  RSA_print_fp(stdout, p.get(), 0);
 
   printf("\nPUBLIC COPY\n");
-  RSA_print_fp(stdout, pub2, 0);
-
-
-
-  int len2 = 0;
-  U8* priv = RSA_EncodePrivate(rsa_priv.get(), &len2);
-  printf("PRIV LEN = %ld", len2);
-  // dump private key from RSA struct into binary array
-
-  RSA* priv2 = RSA_DecodePrivate(priv, len2);
-  // make RSA struct with private key from binary array
-
-  for(int i = 0; i < len2; i++)
-    printf("%02X ", priv[i]);
+  RSA_print_fp(stdout, p_copy.get(), 0);
 
   printf("\nPRIVATE ORIGIN\n");
-  RSA_print_fp(stdout, rsa_priv.get(), 0);
+  RSA_print_fp(stdout, pr.get(), 0);
 
   printf("\nPRIVATE COPY\n");
-  RSA_print_fp(stdout, priv2, 0);
-
+  RSA_print_fp(stdout, pr_copy.get(), 0);
 }
