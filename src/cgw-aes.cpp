@@ -84,4 +84,6 @@ U8* AES::getIV(void) {
   return &iv[0];
 }
 
+EVP_CIPHER* AES::cipher = NULL;
+
 }; // namespace CGW

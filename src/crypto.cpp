@@ -2,42 +2,25 @@
 #include "cgw-aes.h"
 #include "cgw-rsa.h"
 
-U8* RSA_EncodePublic(RSA* rsa, int* len) {
-  U8 *buf, *next;
-  *len = i2d_RSAPublicKey(rsa, NULL);
-  buf = next = (U8*)OPENSSL_malloc(*len);
-  i2d_RSAPublicKey(rsa, &next);
-  return buf;
-}
-
-RSA* RSA_DecodePublic(U8* buf, long len) {
-  return d2i_RSAPublicKey(NULL, const_cast<const U8**>(&buf), len);
-}
-
-U8* RSA_EncodePrivate(RSA* rsa, int* len) {
-  U8 *buf, *next;
-  *len = i2d_RSAPrivateKey(rsa, NULL);
-  buf = next = (U8*)OPENSSL_malloc(*len);
-  i2d_RSAPrivateKey(rsa, &next);
-  return buf;
-}
-
-RSA* RSA_DecodePrivate(U8* buf, long len) {
-  return d2i_RSAPrivateKey(NULL, const_cast<const U8**>(&buf), len);
-}
-
 void generate_keys() {
   // Load the necessary cipher
   CGW::AES::init();
 
   // plaintext, ciphertext, recovered text
-  byte_vector ptext = {0xde, 0xad, 0xbe, 0xef},  ctext, rtext;
+  byte_vector ptext,  ctext, rtext;
+
+  int size = 10000000;
+  ptext.resize(size);
+  for(int i = 0; i < size; i++) {
+    ptext[i] = i % 256;
+  }
 
   CGW::AES aes;
   aes.encrypt(ptext, ctext);
   aes.decrypt(ctext, rtext);
 
-  printf("\nAES ORIGIN\n");
+
+  /* printf("\nAES ORIGIN\n");
   for(int i = 0; i < ptext.size(); i++)
     printf("%02X ", ptext[i]);
 
@@ -47,7 +30,9 @@ void generate_keys() {
 
   printf("\nAES DECODED\n");
   for(int i = 0; i < rtext.size(); i++)
-    printf("%02X ", rtext[i]);
+    printf("%02X ", rtext[i]);// */
+
+  printf("\nAES RESULT %s\n", memcmp(&ptext[0], &rtext[0], size) ? "NOT MATCHES" : "MATCHES" );
 
   //==========================================================
 
