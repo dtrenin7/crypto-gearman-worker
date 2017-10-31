@@ -17,6 +17,7 @@ using std::vector;
 #include <openssl/rand.h>
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
+#include <openssl/err.h>
 
 #define ASSERT assert
 

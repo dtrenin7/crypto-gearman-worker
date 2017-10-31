@@ -9,15 +9,15 @@ void generate_keys() {
   // plaintext, ciphertext, recovered text
   byte_vector ptext,  ctext, rtext;
 
-  int size = 10000000;
+  int size = 210;
   ptext.resize(size);
   for(int i = 0; i < size; i++) {
     ptext[i] = i % 256;
   }
 
   CGW::AES aes;
-  aes.encrypt(ptext, ctext);
-  aes.decrypt(ctext, rtext);
+//  aes.encrypt(ptext, ctext);
+//  aes.decrypt(ctext, rtext);
 
 
   /* printf("\nAES ORIGIN\n");
@@ -32,7 +32,7 @@ void generate_keys() {
   for(int i = 0; i < rtext.size(); i++)
     printf("%02X ", rtext[i]);// */
 
-  printf("\nAES RESULT %s\n", memcmp(&ptext[0], &rtext[0], size) ? "NOT MATCHES" : "MATCHES" );
+//  printf("\nAES RESULT %s\n", memcmp(&ptext[0], &rtext[0], size) ? "NOT MATCHES" : "MATCHES" );
 
   //==========================================================
 
@@ -43,7 +43,12 @@ void generate_keys() {
   p.serialize(p_array);
   pr.serialize(pr_array);
 
-  CGW::RSA_public p_copy(&p_array[0], p_array.size());
+
+  p.encrypt(ptext, ctext);
+  pr.decrypt(ctext, rtext);
+  printf("\nRSA RESULT %s\n", memcmp(&ptext[0], &rtext[0], size) ? "NOT MATCHES" : "MATCHES" );
+
+/*  CGW::RSA_public p_copy(&p_array[0], p_array.size());
   CGW::RSA_private pr_copy(&pr_array[0], pr_array.size());
 
   printf("\nPUBLIC ORIGIN\n");
@@ -56,5 +61,5 @@ void generate_keys() {
   RSA_print_fp(stdout, pr.get(), 0);
 
   printf("\nPRIVATE COPY\n");
-  RSA_print_fp(stdout, pr_copy.get(), 0);
+  RSA_print_fp(stdout, pr_copy.get(), 0); //*/
 }
