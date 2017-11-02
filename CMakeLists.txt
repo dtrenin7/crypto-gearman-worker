@@ -10,17 +10,21 @@ add_definitions("-Wno-switch")
 add_definitions("-Wno-write-strings")
 add_definitions("-Wno-return-type")
 
+#include debug info
+add_definitions("-g")
+
 add_definitions("-std=c++11")
 add_definitions("-DSYSLOG")
 
 add_definitions("-static")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 
 set(SOURCE_FILES
     src/crypto.cpp
     src/cgw-aes.cpp
     src/cgw-rsa.cpp
+    src/cgw-codec.cpp
     src/gearman_worker.cpp
     )
 

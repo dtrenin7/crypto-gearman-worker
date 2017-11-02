@@ -18,6 +18,7 @@ public:
 
   AES();
   AES(U8 _key[AES_KEY_SIZE], U8 _iv[AES_IV_BLOCK_SIZE]);
+  AES(const byte_vector& array, size_t pos = 0);
   virtual ~AES();
 
   static void init(void) {
@@ -27,10 +28,13 @@ public:
   };
 
   void gen_params(void);
-  void encrypt(const byte_vector& ptext, byte_vector& ctext);
-  void decrypt(const byte_vector& ctext, byte_vector& rtext);
+  void encrypt2(const byte_vector& ptext, byte_vector& ctext);
+  void encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos = 0);
+  void decrypt(const byte_vector& ctext, byte_vector& rtext, size_t pos = 0);
   U8* getKey(void);
   U8* getIV(void);
+  void serialize(byte_vector& array, size_t pos = 0);
+  void deserialize(const byte_vector& array, size_t pos = 0);
 };
 
 }; // namespace CGW

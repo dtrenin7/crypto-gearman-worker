@@ -28,10 +28,13 @@ void RSA_public::serialize(byte_vector& array) {
   i2d_RSAPublicKey(rsa.get(), &next);
 }
 
-void RSA_public::encrypt(const byte_vector& ptext, byte_vector& ctext) {
-  ctext.resize(RSA_size(rsa.get()));
-  if( RSA_public_encrypt(ptext.size(), &ptext[0], &ctext[0], rsa.get(),
-    RSA_PKCS1_OAEP_PADDING) < 0 ) {
+void RSA_public::encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos) {
+  ctext.resize(pos + RSA_size(rsa.get()));
+  int len = RSA_public_encrypt(ptext.size(), &ptext[0], &ctext[pos], rsa.get(),
+    RSA_PKCS1_OAEP_PADDING);
+//  printf("\nRSA_public::encrypt: %lu >= %ld at %lu\n", ctext.size(), len, pos);
+
+  if( len < 0 ) {
       printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));
       throw std::runtime_error("RSA_public_encrypt failed");
     }
@@ -61,9 +64,11 @@ void RSA_private::serialize(byte_vector& array) {
   i2d_RSAPrivateKey(rsa.get(), &next);
 }
 
-void RSA_private::decrypt(const byte_vector& ctext, byte_vector& rtext) {
-  rtext.resize(ctext.size());
-  int len = RSA_private_decrypt(ctext.size(), &ctext[0], &rtext[0], rsa.get(),
+void RSA_private::decrypt(const byte_vector& ctext, byte_vector& rtext, size_t pos, size_t clen) {
+  if( !clen )
+    clen = ctext.size() - pos;
+  rtext.resize(clen);
+  int len = RSA_private_decrypt(clen, &ctext[pos], &rtext[0], rsa.get(),
     RSA_PKCS1_OAEP_PADDING);
   if( len < 0 ) {
     printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));
@@ -90,18 +95,20 @@ void RSA_pair::gen_params(void) {
 }
 // SSL error 110 = size too big (~210 bytes max)
 // encryption may be reversed private --> public
-void RSA_pair::encrypt(const byte_vector& ptext, byte_vector& ctext) {
-  ctext.resize(RSA_size(rsa.get()));
-  if( RSA_public_encrypt(ptext.size(), &ptext[0], &ctext[0], rsa.get(),
+void RSA_pair::encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos) {
+  ctext.resize(pos + RSA_size(rsa.get()));
+  if( RSA_public_encrypt(ptext.size(), &ptext[0], &ctext[pos], rsa.get(),
     RSA_PKCS1_OAEP_PADDING) < 0 ) {
       printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));
       throw std::runtime_error("RSA_public_encrypt failed");
     }
 }
 
-void RSA_pair::decrypt(const byte_vector& ctext, byte_vector& rtext) {
-  rtext.resize(ctext.size());
-  int len = RSA_private_decrypt(ctext.size(), &ctext[0], &rtext[0], rsa.get(),
+void RSA_pair::decrypt(const byte_vector& ctext, byte_vector& rtext, size_t pos, size_t clen ) {
+  if( !clen )
+    clen = ctext.size() - pos;
+  rtext.resize(clen);
+  int len = RSA_private_decrypt(clen, &ctext[pos], &rtext[0], rsa.get(),
     RSA_PKCS1_OAEP_PADDING);
   if( len < 0 ) {
     printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));

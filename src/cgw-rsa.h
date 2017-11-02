@@ -19,7 +19,7 @@ public:
   virtual ~RSA_private();
   RSA* get(void);
   void serialize(byte_vector& array);
-  void decrypt(const byte_vector& ctext, byte_vector& rtext);
+  void decrypt(const byte_vector& ctext, byte_vector& rtext, size_t pos = 0, size_t clen = 0);
 };
 // ============================================================================
 class RSA_public {
@@ -32,7 +32,7 @@ public:
   virtual ~RSA_public();
   RSA* get(void);
   void serialize(byte_vector& array);
-  void encrypt(const byte_vector& ptext, byte_vector& ctext);
+  void encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos = 0);
 };
 // ============================================================================
 class RSA_pair {
@@ -46,8 +46,8 @@ public:
   static void init(void) {};
 
   void gen_params(void);
-  void encrypt(const byte_vector& ptext, byte_vector& ctext);
-  void decrypt(const byte_vector& ctext, byte_vector& rtext);
+  void encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos = 0);
+  void decrypt(const byte_vector& ctext, byte_vector& rtext, size_t pos = 0, size_t clen = 0);
 
   RSA* get_public(void);
   RSA* get_private(void);
