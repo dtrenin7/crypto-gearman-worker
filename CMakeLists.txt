@@ -25,6 +25,7 @@ set(SOURCE_FILES
     src/cgw-aes.cpp
     src/cgw-rsa.cpp
     src/cgw-codec.cpp
+    src/cgw-ethereum.cpp
     src/gearman_worker.cpp
     )
 

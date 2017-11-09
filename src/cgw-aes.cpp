@@ -32,35 +32,6 @@ void AES::gen_params(void) {
     throw std::runtime_error("RAND_bytes for iv failed");
 }
 
-void AES::encrypt2(const byte_vector& ptext, byte_vector& ctext) {
-  EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
-  int rc = EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_cbc(), NULL, key, iv);
-  if (rc != 1)
-    throw std::runtime_error("EVP_EncryptInit_ex failed");
-
-  // Recovered text expands upto BLOCK_SIZE
-  ctext.resize(ptext.size() + AES_IV_BLOCK_SIZE);
-  int out_len1 = int(ctext.size());
-  //printf("\nout_len1 = %ld\n", out_len1);
-
-  rc = EVP_EncryptUpdate(ctx.get(), &ctext[0], &out_len1,
-    (const U8*)&ptext[0], int(ptext.size()));
-  if (rc != 1)
-    throw std::runtime_error("EVP_EncryptUpdate failed");
-
-  //printf("\nCLEN: %lu PTEXT: %lu\n", ctext.size(), ptext.size());
-  int out_len2 = (int)ctext.size() - out_len1;
-  //printf("\nout_len2 = %ld\n", out_len1);
-  ctext.resize(ctext.size());
-  rc = EVP_EncryptFinal_ex(ctx.get(), &ctext[0] + out_len1, &out_len2);
-  if (rc != 1)
-    throw std::runtime_error("EVP_EncryptFinal_ex failed");
-
-  // Set cipher text size now that we know it
-  ctext.resize(out_len1 + out_len2);
-}
-
-
 void AES::encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos) {
   EVP_CIPHER_CTX_free_ptr ctx(EVP_CIPHER_CTX_new(), ::EVP_CIPHER_CTX_free);
   int rc = EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_cbc(), NULL, key, iv);

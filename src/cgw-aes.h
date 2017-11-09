@@ -28,7 +28,6 @@ public:
   };
 
   void gen_params(void);
-  void encrypt2(const byte_vector& ptext, byte_vector& ctext);
   void encrypt(const byte_vector& ptext, byte_vector& ctext, size_t pos = 0);
   void decrypt(const byte_vector& ctext, byte_vector& rtext, size_t pos = 0);
   U8* getKey(void);

@@ -1,5 +1,34 @@
 #include "crypto.h"
 #include "cgw-codec.h"
+#include "cgw-ethereum.h"
+
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
+
+std::string exec(const char* cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if( !pipe )
+      throw std::runtime_error("popen() failed!");
+    while (!feof(pipe.get())) {
+        if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+            result += buffer.data();
+    }
+    return result;
+}
+
+std::string createAccount(std::string password) {
+  std::string address = exec(("geth attach ipc:/db/geth.ipc --datadir /db --exec \"personal.newAccount('" + password + "')\"").c_str());
+  size_t pos = address.find("0x"), addrlen = 42;
+  if( pos == std::string::npos || address.length() < pos + addrlen )
+    throw std::runtime_error("createAccount() failed!");
+  return address.substr(pos, addrlen);
+}
 
 void generate_keys() {
   // Load the necessary cipher
@@ -9,7 +38,7 @@ void generate_keys() {
   byte_vector ptext,  ctext, rtext;
 
   int size = 11000000;
-  ptext.resize(size + 10);
+  ptext.resize(size);
   for(int i = 0; i < size; i++) {
     ptext[i] = i % 256;
   }
@@ -58,6 +87,9 @@ void generate_keys() {
     printf("\nRESULT %s\n", memcmp(&ptext[0], &rtext[0], size) ? "NOT MATCHES" : "MATCHES" );
   else
     printf("\nERROR!\n");
+
+  CGW::Ethereum eth;
+  printf("\nNEW ACCOUNT: %s\n", eth.createAccount("123").c_str());
 
 /*  CGW::RSA_public p_copy(&p_array[0], p_array.size());
   CGW::RSA_private pr_copy(&pr_array[0], pr_array.size());
