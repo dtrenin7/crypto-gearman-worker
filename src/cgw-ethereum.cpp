@@ -33,12 +33,40 @@ std::string Ethereum::run(std::string command) {
     " --datadir " + db + " --exec \"" + command + "\"").c_str());
 }
 
+std::string Ethereum::createAccountCmd(std::string password) {
+  return "personal.newAccount('" + password + "');";
+}
+
+std::string Ethereum::unlockAccountCmd(std::string account, std::string password) {
+  return "personal.unlockAccount('" + account + "', '" + password + "');";
+}
+
+std::string Ethereum::lockAccountCmd(std::string account) {
+  return "personal.lockAccount('" + account + "');";
+}
+
 std::string Ethereum::createAccount(std::string password) {
-  std::string address = run("personal.newAccount('" + password + "')");
+  std::string address = run(createAccountCmd(password));
   size_t pos = address.find("0x"), addrlen = 42;
   if( pos == std::string::npos || address.length() < pos + addrlen )
     throw std::runtime_error("createAccount() failed!");
   return address.substr(pos, addrlen);
+}
+
+std::string Ethereum::unlockAccount(std::string account, std::string password) {
+  std::string response = run(unlockAccountCmd(account, password));
+  size_t pos = response.find("true");
+  if( pos == std::string::npos )
+    throw std::runtime_error("unlockAccount() failed!");
+  return response;
+}
+
+std::string Ethereum::lockAccount(std::string account) {
+  std::string response = run(lockAccountCmd(account));
+  size_t pos = response.find("true");
+  if( pos == std::string::npos )
+    throw std::runtime_error("lockAccount() failed!");
+  return response;
 }
 // ============================================================================
 }; // namespace CGW

@@ -89,7 +89,8 @@ void generate_keys() {
     printf("\nERROR!\n");
 
   CGW::Ethereum eth;
-  printf("\nNEW ACCOUNT: %s\n", eth.createAccount("123").c_str());
+  printf("\nUNLOCK ACCOUNT: %s\n", eth.unlockAccount("0x2c5c47a47efc6932a5f9eb367aed245907cc8ab3", "123").c_str());
+  printf("\nLOCK ACCOUNT: %s\n", eth.lockAccount("0x2c5c47a47efc6932a5f9eb367aed245907cc8ab3").c_str());
 
 /*  CGW::RSA_public p_copy(&p_array[0], p_array.size());
   CGW::RSA_private pr_copy(&pr_array[0], pr_array.size());
