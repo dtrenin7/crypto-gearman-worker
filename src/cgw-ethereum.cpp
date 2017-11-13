@@ -9,7 +9,8 @@
 
 namespace CGW {
 // ============================================================================
-Ethereum::Ethereum(const char* _db, const char* _ipc) : db(_db), ipc(_ipc) {
+Ethereum::Ethereum(const char* _db, const char* _ipc, const char* _jspath) :
+  db(_db), ipc(_ipc), jspath(_jspath) {
 }
 
 Ethereum::~Ethereum() {
@@ -31,6 +32,11 @@ std::string Ethereum::exec(const char* cmd) {
 std::string Ethereum::run(std::string command) {
   return exec(("geth attach ipc:" + ipc +
     " --datadir " + db + " --exec \"" + command + "\"").c_str());
+}
+
+std::string Ethereum::runScript(std::string scriptFileName) {
+  return exec(("geth attach ipc:" + ipc + " --datadir " + db + " --jspath " +
+    jspath + " --exec 'loadScript(\"" + scriptFileName + "\")'").c_str());
 }
 
 std::string Ethereum::createAccountCmd(std::string password) {
