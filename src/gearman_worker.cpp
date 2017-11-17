@@ -44,7 +44,10 @@ void* worker_execute_js(gearman_job_st* job, void* context, size_t* result_size,
 
         CGW::Ethereum eth;
         std::string response = eth.run(command);
-        GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), response.length()));
+        size_t len = response.length();
+        if( len && response[len-1] == '\n')
+          len--;  // omit line feed at end
+        GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), len));
         // send result
 
         GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
