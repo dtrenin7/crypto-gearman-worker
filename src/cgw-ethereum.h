@@ -17,6 +17,8 @@ public:
     const char* _jspath = "/home/dtrenin/job/crypto-gearman-worker/src/scripts");
   virtual ~Ethereum();
 
+  std::string getScriptPath(std::string script);
+
   std::string run(std::string command); // execute Web3 JS command
   std::string runScript(std::string scriptFileName);  // execute JS script
 

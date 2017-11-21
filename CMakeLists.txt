@@ -9,6 +9,10 @@ add_definitions("-Wall")
 add_definitions("-Wno-switch")
 add_definitions("-Wno-write-strings")
 add_definitions("-Wno-return-type")
+add_definitions("-Wno-format-security")
+add_definitions("-Wno-unused-but-set-variable")
+add_definitions("-Wno-unused-result")
+add_definitions("-Wno-comment")
 
 #include debug info
 add_definitions("-g")
@@ -22,6 +26,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 
 set(SOURCE_FILES
     src/crypto.cpp
+    src/cgw-error.cpp
+    src/cgw-utils.cpp
+    src/cgw-ini.cpp
+    src/cgw-settings.cpp
     src/cgw-aes.cpp
     src/cgw-rsa.cpp
     src/cgw-codec.cpp

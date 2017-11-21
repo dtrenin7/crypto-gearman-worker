@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include "json.hpp"
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;

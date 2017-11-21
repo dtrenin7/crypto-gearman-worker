@@ -16,6 +16,10 @@ Ethereum::Ethereum(const char* _db, const char* _ipc, const char* _jspath) :
 Ethereum::~Ethereum() {
 }
 
+std::string Ethereum::getScriptPath(std::string script) {
+  return std::string(jspath + "/" + script + ".js");
+}
+
 std::string Ethereum::exec(const char* cmd) {
     std::array<char, 128> buffer;
     std::string result;
@@ -36,7 +40,7 @@ std::string Ethereum::run(std::string command) {
 
 std::string Ethereum::runScript(std::string scriptFileName) {
   return exec(("geth attach ipc:" + ipc + " --datadir " + db + " --jspath " +
-    jspath + " --exec 'loadScript(\"" + scriptFileName + "\")'").c_str());
+    jspath + " --exec 'loadScript(\"" + scriptFileName + ".js\")'").c_str());
 }
 
 std::string Ethereum::createAccountCmd(std::string password) {
