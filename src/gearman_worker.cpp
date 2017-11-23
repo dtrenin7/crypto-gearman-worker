@@ -86,10 +86,14 @@ void* worker_execute_js_script(gearman_job_st* job, void* context, size_t* resul
           // load script template
 
           auto args = data.at("args");
+          bool noremove = false;
           for( json::iterator arg = args.begin(); arg != args.end(); ++arg ) {
             CGW::str_t key("$$$" + arg.key() + "$$$");
             CGW::str_t value(arg.value().get<std::string>());
-            CGW::replace_substring(script_template, key.c_str(), value);
+            if( key == "$$$noremove$$$" ) // reserved keyword
+              noremove = true;
+            else
+              CGW::replace_substring(script_template, key.c_str(), value);
              //response += (arg.key() + " : " + arg.value().get<std::string>() + "\n");
           }
           // patch script template
@@ -100,7 +104,8 @@ void* worker_execute_js_script(gearman_job_st* job, void* context, size_t* resul
           // save patched script on temporary location
 
           response = eth.runScript(temp_script_name);
-          remove(temp_script_path.c_str());
+          if( !noremove )
+            remove(temp_script_path.c_str());
         }
         catch(const std::exception &e) {
           response = e.what();
