@@ -119,10 +119,12 @@ try {
   var certificateJson = atob(certificateJsonB64);
   var certificateProto = JSON.parse(certificateJson);
   var certificateProxy = web3.eth.contract(certificateProto.abi);
-  var contract = certificateProxy.new($$$type$$$, $$$date$$$, {from: $$$account$$$, gas: 2000000, data: certificateProto.unlinked_binary});
+  var contract = certificateProxy.at($$$address$$$);
+
+  var transactionHash = contract.addSubject($$$birthdate$$$, $$$name$$$, $$$gender$$$, $$$origin$$$, {from: $$$account$$$, gas: 2000000});
+  console.log(transactionHash);
 
   web3.personal.lockAccount($$$account$$$);
-  console.log(contract.transactionHash);
 }
 catch(e) {
   console.log("EXCEPTION:");
