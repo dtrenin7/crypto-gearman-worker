@@ -121,10 +121,10 @@ try {
   var certificateProxy = web3.eth.contract(certificateProto.abi);
   var contract = certificateProxy.at($$$address$$$);
 
-  var transactionHash = contract.addSubject($$$subj_account$$$, $$$birthdate$$$, $$$name$$$, $$$gender$$$, $$$origin$$$, {from: $$$account$$$, gas: 2000000});
-  console.log(transactionHash);
+  var transactionHash = contract.sign($$$date$$$, {from:$$$account$$$, gas: 2000000});
 
   web3.personal.lockAccount($$$account$$$);
+  console.log(transactionHash);
 }
 catch(e) {
   console.log("EXCEPTION:");
