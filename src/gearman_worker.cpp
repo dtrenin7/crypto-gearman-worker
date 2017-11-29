@@ -9,6 +9,7 @@
 #include "crypto.h"
 #include "cgw-ethereum.h"
 #include "cgw-utils.h"
+#include "cgw-uri.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -62,6 +63,32 @@ void* worker_execute_js(gearman_job_st* job, void* context, size_t* result_size,
     return NULL;
 }
 
+void* worker_test(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
+    const char* workload = (const char*)gearman_job_workload(job);
+    size_t workload_size = gearman_job_workload_size(job);
+    if(workload && workload_size) {
+      CGW::error_t error;
+      CGW::buffer_t base64data(workload_size), jsondata, uriencoded;
+      memcpy(&base64data[0], workload, workload_size);
+      THROW(CGW::base64decode(uriencoded, base64data));
+      // decode query from base64
+
+      THROW(CGW::UriDecodeBuffer(uriencoded, jsondata));
+
+      GEARMAN_CHECK(gearman_job_send_status(job, 0, workload_size));
+      // start progress count
+
+      GEARMAN_CHECK(gearman_job_send_data(job, &uriencoded[0], uriencoded.size()));
+      // send result
+
+      GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
+      // end progress count
+    }
+    *result_size = 0;
+    *result = GEARMAN_SUCCESS;
+    return NULL;
+}
+
 void* worker_execute_js_script(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
     const char* workload = (const char*)gearman_job_workload(job);
     size_t workload_size = gearman_job_workload_size(job);
@@ -72,10 +99,14 @@ void* worker_execute_js_script(gearman_job_st* job, void* context, size_t* resul
         std::string response;
         try {
           CGW::error_t error;
-          CGW::buffer_t base64data(workload_size), jsondata;
+          CGW::buffer_t base64data(workload_size), jsondata, uriencoded;
           memcpy(&base64data[0], workload, workload_size);
           THROW(CGW::base64decode(jsondata, base64data));
+          //THROW(CGW::base64decode(uriencoded, base64data));
           // decode query from base64
+
+          //THROW(CGW::UriDecodeBuffer(uriencoded, jsondata));
+          // decode UriEncoded into raw JSON
 
           auto data = json::parse(jsondata);
           std::string script_name = data.at("script").get<std::string>();
@@ -144,12 +175,7 @@ void *worker_builder( void *ptr ) {
     add_worker_function("create_account", worker_create_account);
     add_worker_function("execute_js", worker_execute_js);
     add_worker_function("execute_js_script", worker_execute_js_script);
-    /*const char* fn_name = "reverse";
-    gearman_return_t result = gearman_worker_add_function(&worker, fn_name, strlen(fn_name), worker_fn, 0);
-    if(result != GEARMAN_SUCCESS) {
-        printf("ERROR while adding function %s -> %s\n", fn_name, gearman_worker_error(&worker));
-        exit(1);
-    } //*/
+    add_worker_function("test", worker_test);
 
     gearman_worker_add_server(&worker, "localhost", 4730);
 

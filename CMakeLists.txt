@@ -34,6 +34,7 @@ set(SOURCE_FILES
     src/cgw-rsa.cpp
     src/cgw-codec.cpp
     src/cgw-ethereum.cpp
+    src/cgw-uri.cpp
     src/gearman_worker.cpp
     )
 
