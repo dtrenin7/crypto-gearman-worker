@@ -41,6 +41,9 @@ str_t string_format(const i8_t* fmt, Args... args) {
 #define CGW_INFO(log_message, ...)  printf(STR("[INFO] " log_message "\n", ##__VA_ARGS__).c_str())
 #define CGW_DEBUG(log_message, ...) printf(STR("[DEBUG] " log_message "\n", ##__VA_ARGS__).c_str())
 #define CGW_PROC CGW_INFO("%s", __FUNCTION__)
+#ifdef ASSERT
+#undef ASSERT
+#endif
 #define ASSERT(x) CGW_INFO("%s : " #x " = 0x%X", __FUNCTION__, x); assert(x)
 
 #endif /* CGW_LOG_H_ */

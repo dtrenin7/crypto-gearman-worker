@@ -11,7 +11,7 @@
 #include "cgw-error.h"
 
 //#define B2STR(buffer) str_t(buffer.begin(), buffer.end()).c_str()
-#define B2STR(buffer) str_t(reinterpret_cast<cstrptr_t>(&buffer[0]), buffer.size())
+#define B2STR(buffer) CGW::str_t(reinterpret_cast<CGW::cstrptr_t>(&buffer[0]), buffer.size())
 #define BUF2STR(buffer) buff2hex(buffer).c_str()
 // convert buffer to C string
 
@@ -35,9 +35,11 @@ u64_t get_tick_count();
 // get time in milliseconds
 
 error_t base64encode(buffer_t& out, const buffer_t& in);
+error_t b64encode(buffer_t& out, const buffer_t& in);
 // encode to Base64
 
 error_t base64decode(buffer_t& out, const buffer_t& in);
+error_t b64decode(buffer_t& out, const buffer_t& in);
 // decode from Base64
 
 constexpr u32_t str2int(cstrptr_t str, i32_t h = 0) {

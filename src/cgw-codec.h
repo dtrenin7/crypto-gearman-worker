@@ -15,8 +15,8 @@ public:
   codec(RSA_public* _coder, RSA_private* _decoder);
 
   virtual ~codec();
-  void encrypt(const byte_vector& ptext, byte_vector& ctext);
-  void decrypt(const byte_vector& ctext, byte_vector& rtext);
+  void encrypt(buffer_t& ptext, buffer_t& ctext);
+  void decrypt(const buffer_t& ctext, buffer_t& rtext);
 };
 // ============================================================================
 }; // namespace CGW

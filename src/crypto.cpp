@@ -45,8 +45,9 @@ void generate_keys() {
   }
 
   /*CGW::AES aes;
-  for( int i = 0; i < 100; i++) {
-    aes.encrypt2(ptext, ctext);
+  //for( int i = 0; i < 100; i++)
+  {
+    aes.encrypt(ptext, ctext);
     aes.decrypt(ctext, rtext);
   }
 
@@ -82,14 +83,14 @@ void generate_keys() {
 
   CGW::codec codec(&p, &pr);
   codec.encrypt(ptext, ctext);
-  codec.decrypt(ctext, rtext);
+  codec.decrypt(ctext, rtext);// */
 
   if( rtext.size() )
     printf("\nRESULT %s\n", memcmp(&ptext[0], &rtext[0], size) ? "NOT MATCHES" : "MATCHES" );
   else
     printf("\nERROR!\n");
 
-  CGW::Ethereum eth;
+/*  CGW::Ethereum eth;
   printf("\nUNLOCK ACCOUNT: %s\n", eth.unlockAccount("0x2c5c47a47efc6932a5f9eb367aed245907cc8ab3", "123").c_str());
   printf("\nLOCK ACCOUNT: %s\n", eth.lockAccount("0x2c5c47a47efc6932a5f9eb367aed245907cc8ab3").c_str());
 

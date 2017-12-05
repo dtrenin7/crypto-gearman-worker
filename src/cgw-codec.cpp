@@ -9,14 +9,14 @@ codec::codec(RSA_public* _coder, RSA_private* _decoder) :
 codec::~codec() {
 }
 
-void codec::encrypt(const byte_vector& ptext, byte_vector& ctext) {
+void codec::encrypt(buffer_t& ptext, buffer_t& ctext) {
   AES aes;
   size_t pos = 4;
   ctext.reserve(RSA_size(coder->get()) + AES_KEY_SIZE +
-    (AES_IV_BLOCK_SIZE << 1) + ptext.size() + pos);
+    (AES_IV_SIZE << 1) + ptext.size() + pos);
   // allocate enough
 
-  byte_vector symmetric;
+  buffer_t symmetric;
   aes.serialize(symmetric);
   coder->encrypt(symmetric, ctext, pos);
   //printf("\nCLEN: %ld\n", ctext.size());
@@ -32,13 +32,13 @@ void codec::encrypt(const byte_vector& ptext, byte_vector& ctext) {
   // encrypt message with AES-256 and attach
 }
 
-void codec::decrypt(const byte_vector& ctext, byte_vector& rtext) {
+void codec::decrypt(const buffer_t& ctext, buffer_t& rtext) {
   size_t size = 0, pos = 4;
   memcpy(&size, &ctext[0], pos);
 //  printf("\nSYM_SIZE: %lu\n", size);
   // get the RSA-encrypted sym key length
 
-  byte_vector symmetric;
+  buffer_t symmetric;
   decoder->decrypt(ctext, symmetric, pos, size);
   AES aes(symmetric);
   pos += size;

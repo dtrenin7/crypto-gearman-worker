@@ -38,6 +38,7 @@ set(SOURCE_FILES
     src/gearman_worker.cpp
     )
 
+#set(LIBS ${LIBS} gearman pthread cryptopp crypto)
 set(LIBS ${LIBS} gearman pthread crypto)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")

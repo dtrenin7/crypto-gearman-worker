@@ -10,6 +10,7 @@
 #include "cgw-ethereum.h"
 #include "cgw-utils.h"
 #include "cgw-uri.h"
+#include "cgw-codec.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -68,17 +69,59 @@ void* worker_test(gearman_job_st* job, void* context, size_t* result_size, gearm
     size_t workload_size = gearman_job_workload_size(job);
     if(workload && workload_size) {
       CGW::error_t error;
-      CGW::buffer_t base64data(workload_size), jsondata, uriencoded;
-      memcpy(&base64data[0], workload, workload_size);
-      THROW(CGW::base64decode(uriencoded, base64data));
-      // decode query from base64
+      CGW::str_t response;
+      CGW::buffer_t base64data(workload_size), data, decoded, encoded;
+      try {
+        memcpy(&base64data[0], workload, workload_size);
 
-      THROW(CGW::UriDecodeBuffer(uriencoded, jsondata));
+        THROW(CGW::b64decode(data, base64data));
+        // decode query from base64
+
+        CGW::AES aes(data);
+        U8 iv[AES_IV_SIZE];
+        memcpy(iv, aes.getIV(), AES_IV_SIZE);
+
+//        CGW::buffer_t data2({28, 1, 216, 232, 148, 60, 200, 102, 55, 219, 175, 27, 100, 233, 65, 131, 24, 145, 179, 117, 84, 46, 126, 111, 88, 12, 35, 194, 46, 115, 212, 220});
+        size_t pos = AES_KEY_SIZE + AES_IV_SIZE;
+/*        for(size_t i = pos; i < data.size(); i++) {
+          char text[16] = {0};
+          sprintf(text, "%d, ", (int)data[i]);
+          response += text;
+        }
+        throw STATUS(response); */
+
+//        if(!memcmp(&data[pos], &data2[0], data2.size()))
+//          throw STATUS("ARRAY MATCHES");
+//        aes.decrypt(data, decoded, AES_KEY_SIZE + AES_IV_SIZE);
+        aes.decrypt(data, decoded, pos);
+        aes.setIV(iv);
+//        aes.pad(decoded);
+
+
+      //  encoded.swap(decoded);
+        aes.encrypt(decoded, encoded);
+
+        base64data.clear();
+        THROW(CGW::base64encode(base64data, encoded));
+        response = B2STR(base64data);
+      }
+      catch(const std::exception &e) {
+        response = e.what();
+      }
+      catch(CGW::error_t& err) {
+        response = err.get_text().c_str();
+      }
+      /*catch(const CryptoPP::Exception& e)
+      {
+        response = e.what();
+        encoded.resize(response.length());
+        memcpy(&encoded[0], response.c_str(), response.length());
+      }*/;
 
       GEARMAN_CHECK(gearman_job_send_status(job, 0, workload_size));
       // start progress count
 
-      GEARMAN_CHECK(gearman_job_send_data(job, &uriencoded[0], uriencoded.size()));
+      GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), response.length()));
       // send result
 
       GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
@@ -109,7 +152,7 @@ void* worker_execute_js_script(gearman_job_st* job, void* context, size_t* resul
           // decode UriEncoded into raw JSON
 
           auto data = json::parse(jsondata);
-          std::string script_name = data.at("script").get<std::string>();
+          CGW::str_t script_name = data.at("script").get<std::string>();
 
           CGW::Ethereum eth;
           CGW::str_t script_template;
@@ -194,7 +237,9 @@ void *worker_builder( void *ptr ) {
 
 int main(void) {
 
-  //generate_keys();
+  CGW::AES::init();
+
+//  generate_keys();
     pthread_t threads[THREADS];
     for(int i = 0; i < THREADS; i++)
         if(pthread_create(&threads[i], NULL, worker_builder, NULL)) {
