@@ -44,7 +44,8 @@ void codec::decrypt(const buffer_t& ctext, buffer_t& rtext) {
 
   buffer_t symmetric;
   decoder->decrypt(ctext, symmetric, pos, size);
-  CGW_DEBUG("AES KEY & IV: %lu = %s", symmetric.size(), buff2hex(symmetric).c_str());
+  CGW_DEBUG("AES KEY & IV: %lu = %s HASH: %s", symmetric.size(),
+    buff2hex2(symmetric).c_str(), sha1(symmetric).c_str());
 
   AES aes(symmetric);
   pos += size;

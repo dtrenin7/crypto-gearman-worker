@@ -21,7 +21,7 @@ RSA_public::RSA_public(u8_t* buf, size_t len) :
 }
 
 RSA_public::RSA_public(buffer_t& buffer) : RSA_public(&buffer[0], buffer.size()) {
-  CGW_DEBUG("RSA PUBLIC KEY: %lu = %s", buffer.size(), buff2hex2(buffer).c_str());
+//  CGW_DEBUG("RSA PUBLIC KEY: %lu = %s", buffer.size(), buff2hex2(buffer).c_str());
 }
 
 RSA_public::~RSA_public() {
@@ -67,9 +67,10 @@ void RSA_public::encrypt(const buffer_t& ptext, buffer_t& ctext, size_t pos) {
 //  printf("\nRSA_public::encrypt: %lu >= %ld at %lu\n", ctext.size(), len, pos);
 
   if( len < 0 ) {
-      printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));
-      throw std::runtime_error("RSA_public_encrypt failed");
-    }
+    ERR_load_crypto_strings();
+    printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));
+    throw std::runtime_error("RSA_public_encrypt failed");
+  }
 }
 // ============================================================================
 RSA_private::RSA_private() : rsa(RSA_new(), ::RSA_free) {
