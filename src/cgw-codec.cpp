@@ -38,14 +38,13 @@ void codec::decrypt(const buffer_t& ctext, buffer_t& rtext) {
   if( !decoder )
     throw STATUS("Decoder is empty");
   size_t size = size_t(ctext[0]) & 0xFF, pos = 1;
-  CGW_DEBUG("SIZE: %lu", size);
-//  printf("\nSYM_SIZE: %lu\n", size);
+//  CGW_DEBUG("SIZE: %lu", size);
   // get the RSA-encrypted sym key length
 
   buffer_t symmetric;
   decoder->decrypt(ctext, symmetric, pos, size);
-  CGW_DEBUG("AES KEY & IV: %lu = %s HASH: %s", symmetric.size(),
-    buff2hex2(symmetric).c_str(), sha1(symmetric).c_str());
+//  CGW_DEBUG("AES KEY & IV: %lu = %s HASH: %s", symmetric.size(),
+//    buff2hex2(symmetric).c_str(), sha1(symmetric).c_str());
 
   AES aes(symmetric);
   pos += size;

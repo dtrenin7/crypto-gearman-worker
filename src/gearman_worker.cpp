@@ -123,18 +123,14 @@ void* worker_secure_js(gearman_job_st* job, void* context, size_t* result_size, 
       std::string hexData(workload, workload_size);
       CGW::buffer_t data, decoded, encoded;
       try {
-//        std::string hexData(workload, workload_size);
-//        for( CGW::u32_t i = 0, j = hexData.length(); i < j; i++ )
-//            hexData[i] = tolower(hexData[i]);
-
         CGW::hex2buff(hexData.c_str(), data);
-        CGW_DEBUG("INPUT %lu = %s HASH: %s", data.size(), CGW::buff2hex2(data).c_str(), CGW::sha1(data).c_str());
+  //      CGW_DEBUG("INPUT %lu = %s HASH: %s", data.size(), CGW::buff2hex2(data).c_str(), CGW::sha1(data).c_str());
         // decode query from base64
 
         CGW::buffer_t privKey;
         CGW::str_t privateB64("MIICXAIBAAKBgQCxBPm2juRg8V5bLptl6SaecEryLor5qYwyaRnPgdE18R0gxrokimOJC9M8ElzDVx5zVnsyKdyidaUOnAHyPXk26BXcDiY2i8/47II9ZqAZjwZ+dEJe82nbsf0qvjPQ20LUB/G5cCFBdp4H+cIYxaMCFDh72l00GFT5LgY74mBevwIDAQABAoGBAKdfCfA3aO3UKZ/TEHEqIi6aA/K6WQK38WvUfef6WWJESIMuAt/7zSLOAHqC7hxwKcVp1m/WrtsYmuiWTyzIPOs9tWUeOqt6qJWU6XF0vO2yDin361x1bh13S8sJFJv6kuqdmp/XNFwzlwWGzzlyq1yOJk8aR0NrqpqdNKtwKyEpAkEA6yqR4x0BvhCeCq8OPb9lU6rvuYR6aeWXSpB9btBa7xYi0VxQ6P1gcUXhA8bru1o85XKSf+05Zc3vs9DbFnlW8wJBAMCzq3zzC/0UjACDOnh5pCcU3I03htv+K/tXwz1rJhuj5/bLW6OEhba7WIRsYe0b/lvSce8KhLKX7uJzLj/6pAUCQQCgUWcfU3kKn71+PxUQV1i2j0PaT0w8wT5AoPxB/VzgvVCDNdIa5BFJZ4Ac2RF/qeb17QOenpSQqLIO/gU97v6tAkBRhLAq73ZG3YZMQTde97ZlggG7C55VOjTI4tuJA+bfEntyf5yIk+ss3hwYCPF0KL91gJUKFl0EYBmCWk9aaWExAj8sMaAxb9i/10BbbXrwRrU0s/0BTnTV47KloMUHmryIY1HnqeL4o483u7UuW2O/s3lK+Djns6tQtrfSGkPgJts=");
         THROW(CGW::base64decode(privKey, STR2B(privateB64)));
-        CGW_DEBUG("PRIV KEY DECODED %lu HASH %s", privKey.size(), CGW::sha1(privKey).c_str());
+//        CGW_DEBUG("PRIV KEY DECODED %lu HASH %s", privKey.size(), CGW::sha1(privKey).c_str());
 
         CGW::RSA_private serverPrivateKey(privKey);
         CGW::codec decoder(NULL, &serverPrivateKey);
@@ -147,14 +143,14 @@ void* worker_secure_js(gearman_job_st* job, void* context, size_t* result_size, 
         CGW::buffer_t pubKey;
         CGW::str_t clientB64 = jdata.at("client").get<std::string>();
         THROW(CGW::base64decode(pubKey, STR2B(clientB64)));
-        CGW_DEBUG("CLIENT HASH: %s", CGW::sha1(pubKey).c_str());
+//        CGW_DEBUG("CLIENT HASH: %s", CGW::sha1(pubKey).c_str());
         // get client public key (RSA)
 
         CGW::str_t hexData = jdata.at("command").get<std::string>();
         CGW::buffer_t commandBuf;
         CGW::hex2buff(hexData.c_str(), commandBuf);
         CGW::str_t command = B2STR(commandBuf);
-        CGW_DEBUG("COMMAND: %s", command.c_str());
+//        CGW_DEBUG("COMMAND: %s", command.c_str());
         // get the etherteum command
 
         CGW::Ethereum eth;
@@ -166,8 +162,8 @@ void* worker_secure_js(gearman_job_st* job, void* context, size_t* result_size, 
 
         data = STR2B(response);
         CGW::buffer_t encoded;
-        CGW::RSA_public clientPrivateKey(pubKey);
-        CGW::codec encoder(&clientPrivateKey, NULL);
+        CGW::RSA_public clientPublicKey(pubKey);
+        CGW::codec encoder(&clientPublicKey, NULL);
         encoder.encrypt(data, encoded);
         response = CGW::buff2hex2(encoded);
         // encrypt response with client public key (and SK of course)
@@ -257,8 +253,8 @@ void* worker_secure_js_script(gearman_job_st* job, void* context, size_t* result
 
         data = STR2B(response);
         CGW::buffer_t encoded;
-        CGW::RSA_public clientPrivateKey(pubKey);
-        CGW::codec encoder(&clientPrivateKey, NULL);
+        CGW::RSA_public clientPublicKey(pubKey);
+        CGW::codec encoder(&clientPublicKey, NULL);
         encoder.encrypt(data, encoded);
         response = CGW::buff2hex2(encoded);
         // encrypt response with client public key (and SK of course)
