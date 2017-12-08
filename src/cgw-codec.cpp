@@ -1,4 +1,7 @@
 #include "cgw-codec.h"
+#include "cgw-error.h"
+#include "cgw-log.h"
+#include "cgw-utils.h"
 
 namespace CGW {
 // ============================================================================
@@ -10,8 +13,10 @@ codec::~codec() {
 }
 
 void codec::encrypt(buffer_t& ptext, buffer_t& ctext) {
+  if( !coder )
+    throw STATUS("Coder is empty");
   AES aes;
-  size_t pos = 4;
+  size_t pos = 1;
   ctext.reserve(RSA_size(coder->get()) + AES_KEY_SIZE +
     (AES_IV_SIZE << 1) + ptext.size() + pos);
   // allocate enough
@@ -19,27 +24,28 @@ void codec::encrypt(buffer_t& ptext, buffer_t& ctext) {
   buffer_t symmetric;
   aes.serialize(symmetric);
   coder->encrypt(symmetric, ctext, pos);
-  //printf("\nCLEN: %ld\n", ctext.size());
   // encrypt symmetric key AES-256 with asymmetric RSA-2048 public key
 
-  size_t size = ctext.size() - pos;
-//  printf("\nSIZE: %lu\n", size);
-  memcpy(&ctext[0], &size, pos);
+  size_t size = (ctext.size() - pos) & 0xFF;
+  ctext[0] = (u8_t)size;
   // save encrypted sym key size
 
-//  printf("\nENC: %ld\n", ctext.size());
   aes.encrypt(ptext, ctext, ctext.size());
   // encrypt message with AES-256 and attach
 }
 
 void codec::decrypt(const buffer_t& ctext, buffer_t& rtext) {
-  size_t size = 0, pos = 4;
-  memcpy(&size, &ctext[0], pos);
+  if( !decoder )
+    throw STATUS("Decoder is empty");
+  size_t size = size_t(ctext[0]) & 0xFF, pos = 1;
+  CGW_DEBUG("SIZE: %lu", size);
 //  printf("\nSYM_SIZE: %lu\n", size);
   // get the RSA-encrypted sym key length
 
   buffer_t symmetric;
   decoder->decrypt(ctext, symmetric, pos, size);
+  CGW_DEBUG("AES KEY & IV: %lu = %s", symmetric.size(), buff2hex(symmetric).c_str());
+
   AES aes(symmetric);
   pos += size;
   // decode & deserialize AES-256 session key

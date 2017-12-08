@@ -18,6 +18,7 @@ using std::vector;
 #include <openssl/bn.h>
 #include <openssl/rsa.h>
 #include <openssl/err.h>
+#include <openssl/pem.h>
 
 #define ASSERT assert
 

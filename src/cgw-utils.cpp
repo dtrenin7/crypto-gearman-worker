@@ -25,6 +25,7 @@
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
+#include <openssl/sha.h>
 
 namespace CGW {
 
@@ -40,9 +41,45 @@ str_t buff2hex( u8_t* buffer, u32_t size ) {
     return ss.str();
 }
 
+str_t buff2hex2( buffer_t& buffer ) {
+  constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                             '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+  size_t len = buffer.size();
+  str_t s(len << 1, ' ');
+  for (size_t i = 0; i < len; ++i) {
+    size_t pos = i << 1;
+    s[pos]     = hexmap[(buffer[i] & 0xF0) >> 4];
+    s[pos + 1] = hexmap[buffer[i] & 0x0F];
+  }
+  return s;
+}
+
 str_t buff2hex( buffer_t& buffer ) {
 
     return buffer.size() ? buff2hex(&buffer[0], buffer.size()) : "";
+}
+
+void hex2buff( cstrptr_t str, buffer_t& buffer )
+{
+  buffer.clear();
+  int len = strlen(str);
+  if( !len )
+    return;
+  len >>= 1;
+  buffer.resize(len);
+  for (int i = 0; i < len; ++i) {
+    int pos = i << 1;
+    u8_t high = (u8_t)str[pos], low = (u8_t)str[pos + 1];
+    high = ((high >= 'a' ? high - 'a' + 0xA : high - '0') & 0xF) << 4;
+    low = (low >= 'a' ? low - 'a' + 0xA : low - '0') & 0xF;
+    buffer[i] = high|low;
+  }
+}
+
+str_t sha1(buffer_t& buffer) {
+  buffer_t obuf(20), text;
+  SHA1(&buffer[0], buffer.size(), &obuf[0]);
+  return buff2hex2(obuf);
 }
 
 str_t get_module_path() {

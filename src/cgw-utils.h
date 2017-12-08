@@ -12,6 +12,7 @@
 
 //#define B2STR(buffer) str_t(buffer.begin(), buffer.end()).c_str()
 #define B2STR(buffer) CGW::str_t(reinterpret_cast<CGW::cstrptr_t>(&buffer[0]), buffer.size())
+#define STR2B(str) CGW::buffer_t(str.begin(), str.end())
 #define BUF2STR(buffer) buff2hex(buffer).c_str()
 // convert buffer to C string
 
@@ -23,6 +24,8 @@ namespace CGW {
 
 str_t buff2hex( buffer_t& buffer );
 str_t buff2hex( u8_t* buffer, u32_t size );
+void hex2buff( cstrptr_t str, buffer_t& buffer );
+str_t buff2hex2( buffer_t& buffer );
 // converts binary array into readable hex string
 
 str_t get_module_path();
@@ -41,6 +44,7 @@ error_t b64encode(buffer_t& out, const buffer_t& in);
 error_t base64decode(buffer_t& out, const buffer_t& in);
 error_t b64decode(buffer_t& out, const buffer_t& in);
 // decode from Base64
+// ***BEWARE*** BUGGY on random data!!! (use urlencode before or don't use)
 
 constexpr u32_t str2int(cstrptr_t str, i32_t h = 0) {
     return !str[h] ? 5381 : (str2int(str, h+1)*33) ^ str[h]; };
@@ -72,6 +76,9 @@ error_t write_file(str_t name, const buffer_t& data);
 
 error_t write_file(str_t name, const str_t& data);
 // write 'data' to file 'name'. Creates file, if it doesn't exists and overwrites if it is exists.
+
+str_t sha1(buffer_t& buffer);
+// compute SHA1 hash
 
 };	// namespace CGW
 

@@ -10,6 +10,7 @@
 #include "cgw-ethereum.h"
 #include "cgw-utils.h"
 #include "cgw-uri.h"
+#include "cgw-log.h"
 #include "cgw-codec.h"
 #include "json.hpp"
 
@@ -64,6 +65,111 @@ void* worker_execute_js(gearman_job_st* job, void* context, size_t* result_size,
     return NULL;
 }
 
+void* worker_generate_rsa_pair(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
+    const char* workload = (const char*)gearman_job_workload(job);
+    size_t workload_size = gearman_job_workload_size(job);
+    if(workload && workload_size) {
+      CGW::error_t error;
+      CGW::str_t response;
+      CGW::buffer_t base64data(workload_size), data;
+      try {
+        memcpy(&base64data[0], workload, workload_size);
+        THROW(CGW::b64decode(data, base64data));
+        // decode query from base64
+
+        CGW::cstrptr_t magic = "DidUeaT$oMe$hit?"; // RGlkVWVhVCRvTWUkaGl0Pw==
+        if( memcmp(&data[0], magic, strlen(magic)) )
+          throw STATUS("*** FUCK YOU ***");
+        // strip DDoS attack attempts
+
+        CGW::RSA_pair rsa;
+        CGW::RSA_public rsaPublic(rsa.get_public());
+        CGW::RSA_private rsaPrivate(rsa.get_private());
+        CGW::buffer_t pubBuffer, privBuffer, pubB64, privB64;
+        rsaPublic.serialize(pubBuffer);
+        rsaPrivate.serialize(privBuffer);
+        THROW(CGW::base64encode(pubB64, pubBuffer));
+        THROW(CGW::base64encode(privB64, privBuffer));
+
+        response = B2STR(pubB64) + "***" + B2STR(privB64); // GENERATE PAIR */
+      }
+      catch(const std::exception &e) {
+        response = e.what();
+      }
+      catch(CGW::error_t& err) {
+        response = err.get_text().c_str();
+      }
+
+      GEARMAN_CHECK(gearman_job_send_status(job, 0, workload_size));
+      // start progress count
+
+      GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), response.length()));
+      // send result
+
+      GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
+      // end progress count
+    }
+    *result_size = 0;
+    *result = GEARMAN_SUCCESS;
+    return NULL;
+}
+
+void* worker_secure_js(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
+    const char* workload = (const char*)gearman_job_workload(job); // WORK_IS_HERE
+    size_t workload_size = gearman_job_workload_size(job);
+    if(workload && workload_size) {
+      CGW::error_t error;
+      CGW::str_t response;
+      std::string hexData(workload, workload_size);
+      CGW::buffer_t data, decoded, encoded, sessionKey;
+      try {
+        //memcpy(&base64data[0], workload, workload_size);
+        //THROW(CGW::b64decode(data, base64data));
+        // decode query from base64
+
+//        std::string hexData(workload, workload_size);
+//        for( CGW::u32_t i = 0, j = hexData.length(); i < j; i++ )
+//            hexData[i] = tolower(hexData[i]);
+
+        CGW::hex2buff(hexData.c_str(), data);
+        CGW_DEBUG("INPUT %lu = %s HASH: %s", data.size(), CGW::buff2hex2(data).c_str(), CGW::sha1(data).c_str());
+        // decode query from base64
+
+        CGW::buffer_t privKey;
+        CGW::str_t privateB64("MIICXAIBAAKBgQCxBPm2juRg8V5bLptl6SaecEryLor5qYwyaRnPgdE18R0gxrokimOJC9M8ElzDVx5zVnsyKdyidaUOnAHyPXk26BXcDiY2i8/47II9ZqAZjwZ+dEJe82nbsf0qvjPQ20LUB/G5cCFBdp4H+cIYxaMCFDh72l00GFT5LgY74mBevwIDAQABAoGBAKdfCfA3aO3UKZ/TEHEqIi6aA/K6WQK38WvUfef6WWJESIMuAt/7zSLOAHqC7hxwKcVp1m/WrtsYmuiWTyzIPOs9tWUeOqt6qJWU6XF0vO2yDin361x1bh13S8sJFJv6kuqdmp/XNFwzlwWGzzlyq1yOJk8aR0NrqpqdNKtwKyEpAkEA6yqR4x0BvhCeCq8OPb9lU6rvuYR6aeWXSpB9btBa7xYi0VxQ6P1gcUXhA8bru1o85XKSf+05Zc3vs9DbFnlW8wJBAMCzq3zzC/0UjACDOnh5pCcU3I03htv+K/tXwz1rJhuj5/bLW6OEhba7WIRsYe0b/lvSce8KhLKX7uJzLj/6pAUCQQCgUWcfU3kKn71+PxUQV1i2j0PaT0w8wT5AoPxB/VzgvVCDNdIa5BFJZ4Ac2RF/qeb17QOenpSQqLIO/gU97v6tAkBRhLAq73ZG3YZMQTde97ZlggG7C55VOjTI4tuJA+bfEntyf5yIk+ss3hwYCPF0KL91gJUKFl0EYBmCWk9aaWExAj8sMaAxb9i/10BbbXrwRrU0s/0BTnTV47KloMUHmryIY1HnqeL4o483u7UuW2O/s3lK+Djns6tQtrfSGkPgJts=");
+        THROW(CGW::base64decode(privKey, STR2B(privateB64)));
+        CGW_DEBUG("PRIV KEY DECODED %lu HASH %s", privKey.size(), CGW::sha1(privKey).c_str());
+
+        CGW::RSA_private serverPrivateKey(privKey);
+        CGW_DEBUG("PRIV KEY ASSIGNED");
+
+        serverPrivateKey.decrypt(data, sessionKey);
+//        CGW::codec decoder(NULL, &serverPrivateKey);
+//        decoder.decrypt(data, decoded); // */
+
+        response = CGW::buff2hex2(sessionKey);
+      }
+      catch(const std::exception &e) {
+        response = e.what();
+      }
+      catch(CGW::error_t& err) {
+        response = err.get_text().c_str();
+      }
+
+      GEARMAN_CHECK(gearman_job_send_status(job, 0, workload_size));
+      // start progress count
+
+      GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), response.length()));
+      // send result
+
+      GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
+      // end progress count
+    }
+    *result_size = 0;
+    *result = GEARMAN_SUCCESS;
+    return NULL;
+}
+
 void* worker_test(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
     const char* workload = (const char*)gearman_job_workload(job);
     size_t workload_size = gearman_job_workload_size(job);
@@ -81,24 +187,10 @@ void* worker_test(gearman_job_st* job, void* context, size_t* result_size, gearm
         U8 iv[AES_IV_SIZE];
         memcpy(iv, aes.getIV(), AES_IV_SIZE);
 
-//        CGW::buffer_t data2({28, 1, 216, 232, 148, 60, 200, 102, 55, 219, 175, 27, 100, 233, 65, 131, 24, 145, 179, 117, 84, 46, 126, 111, 88, 12, 35, 194, 46, 115, 212, 220});
         size_t pos = AES_KEY_SIZE + AES_IV_SIZE;
-/*        for(size_t i = pos; i < data.size(); i++) {
-          char text[16] = {0};
-          sprintf(text, "%d, ", (int)data[i]);
-          response += text;
-        }
-        throw STATUS(response); */
-
-//        if(!memcmp(&data[pos], &data2[0], data2.size()))
-//          throw STATUS("ARRAY MATCHES");
-//        aes.decrypt(data, decoded, AES_KEY_SIZE + AES_IV_SIZE);
         aes.decrypt(data, decoded, pos);
         aes.setIV(iv);
-//        aes.pad(decoded);
 
-
-      //  encoded.swap(decoded);
         aes.encrypt(decoded, encoded);
 
         base64data.clear();
@@ -219,6 +311,8 @@ void *worker_builder( void *ptr ) {
     add_worker_function("execute_js", worker_execute_js);
     add_worker_function("execute_js_script", worker_execute_js_script);
     add_worker_function("test", worker_test);
+    add_worker_function("key", worker_generate_rsa_pair);
+    add_worker_function("secure_js", worker_secure_js);
 
     gearman_worker_add_server(&worker, "localhost", 4730);
 
@@ -236,21 +330,20 @@ void *worker_builder( void *ptr ) {
 #define THREADS 4
 
 int main(void) {
-
   CGW::AES::init();
 
-//  generate_keys();
-    pthread_t threads[THREADS];
-    for(int i = 0; i < THREADS; i++)
-        if(pthread_create(&threads[i], NULL, worker_builder, NULL)) {
-            printf("Can't create thread\n");
-            exit(1);
-        }
-    printf("All %d threads created successfully.\n", THREADS);
+  //generate_keys();
+  pthread_t threads[THREADS];
+  for(int i = 0; i < THREADS; i++)
+      if(pthread_create(&threads[i], NULL, worker_builder, NULL)) {
+          printf("Can't create thread\n");
+          exit(1);
+      }
+  printf("All %d threads created successfully.\n", THREADS);
 
-    for(int i = 0; i < THREADS; i++)
-        pthread_join(threads[i], NULL);
+  for(int i = 0; i < THREADS; i++)
+      pthread_join(threads[i], NULL);
 
-    printf("All %d threads finishes their jobs.\n", THREADS); // */
-    return 0;
+  printf("All %d threads finishes their jobs.\n", THREADS); // */
+  return 0;
 }
