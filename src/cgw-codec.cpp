@@ -26,7 +26,8 @@ void codec::encrypt(buffer_t& ptext, buffer_t& ctext) {
   coder->encrypt(symmetric, ctext, pos);
   // encrypt symmetric key AES-256 with asymmetric RSA-2048 public key
 
-  size_t size = (ctext.size() - pos) & 0xFF;
+  size_t size = ((ctext.size() - pos) >> 6) & 0xFF; // divide by 64
+  //CGW_INFO("ENCSIZE: %lu", ctext.size() - pos);
   ctext[0] = (u8_t)size;
   // save encrypted sym key size
 
@@ -37,7 +38,7 @@ void codec::encrypt(buffer_t& ptext, buffer_t& ctext) {
 void codec::decrypt(const buffer_t& ctext, buffer_t& rtext) {
   if( !decoder )
     throw STATUS("Decoder is empty");
-  size_t size = size_t(ctext[0]) & 0xFF, pos = 1;
+  size_t size = (size_t(ctext[0]) & 0xFF) << 6, pos = 1; // multiply by 64
 //  CGW_DEBUG("SIZE: %lu", size);
   // get the RSA-encrypted sym key length
 

@@ -110,7 +110,7 @@ void RSA_pair::gen_params(void) {
     throw std::runtime_error("BN_set_word failed");
   }
 
-  rc = RSA_generate_key_ex(rsa.get(), 1024, bn.get(), NULL);
+  rc = RSA_generate_key_ex(rsa.get(), 2048, bn.get(), NULL);
   if(rc != 1) {
     printf("ERROR: %s\n", ERR_error_string(ERR_get_error(), NULL));
     throw std::runtime_error("RSA_generate_key_ex failed");

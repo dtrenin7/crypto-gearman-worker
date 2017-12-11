@@ -12,9 +12,13 @@
 #include "cgw-uri.h"
 #include "cgw-log.h"
 #include "cgw-codec.h"
+#include "cgw-settings.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
+
+CGW::settings* Settings;
+
 
 #define GEARMAN_CHECK(x) if(gearman_failed(x)) { *result_size = 0; *result = GEARMAN_ERROR; return NULL; }
 
@@ -127,12 +131,12 @@ void* worker_secure_js(gearman_job_st* job, void* context, size_t* result_size, 
   //      CGW_DEBUG("INPUT %lu = %s HASH: %s", data.size(), CGW::buff2hex2(data).c_str(), CGW::sha1(data).c_str());
         // decode query from base64
 
-        CGW::buffer_t privKey;
-        CGW::str_t privateB64("MIICXAIBAAKBgQCxBPm2juRg8V5bLptl6SaecEryLor5qYwyaRnPgdE18R0gxrokimOJC9M8ElzDVx5zVnsyKdyidaUOnAHyPXk26BXcDiY2i8/47II9ZqAZjwZ+dEJe82nbsf0qvjPQ20LUB/G5cCFBdp4H+cIYxaMCFDh72l00GFT5LgY74mBevwIDAQABAoGBAKdfCfA3aO3UKZ/TEHEqIi6aA/K6WQK38WvUfef6WWJESIMuAt/7zSLOAHqC7hxwKcVp1m/WrtsYmuiWTyzIPOs9tWUeOqt6qJWU6XF0vO2yDin361x1bh13S8sJFJv6kuqdmp/XNFwzlwWGzzlyq1yOJk8aR0NrqpqdNKtwKyEpAkEA6yqR4x0BvhCeCq8OPb9lU6rvuYR6aeWXSpB9btBa7xYi0VxQ6P1gcUXhA8bru1o85XKSf+05Zc3vs9DbFnlW8wJBAMCzq3zzC/0UjACDOnh5pCcU3I03htv+K/tXwz1rJhuj5/bLW6OEhba7WIRsYe0b/lvSce8KhLKX7uJzLj/6pAUCQQCgUWcfU3kKn71+PxUQV1i2j0PaT0w8wT5AoPxB/VzgvVCDNdIa5BFJZ4Ac2RF/qeb17QOenpSQqLIO/gU97v6tAkBRhLAq73ZG3YZMQTde97ZlggG7C55VOjTI4tuJA+bfEntyf5yIk+ss3hwYCPF0KL91gJUKFl0EYBmCWk9aaWExAj8sMaAxb9i/10BbbXrwRrU0s/0BTnTV47KloMUHmryIY1HnqeL4o483u7UuW2O/s3lK+Djns6tQtrfSGkPgJts=");
-        THROW(CGW::base64decode(privKey, STR2B(privateB64)));
+//        CGW::buffer_t privKey;
+//        CGW::str_t privateB64(Settings->serverPrivateKey);
+//        THROW(CGW::base64decode(privKey, STR2B(privateB64)));
 //        CGW_DEBUG("PRIV KEY DECODED %lu HASH %s", privKey.size(), CGW::sha1(privKey).c_str());
 
-        CGW::RSA_private serverPrivateKey(privKey);
+        CGW::RSA_private serverPrivateKey(Settings->serverPrivateKey);
         CGW::codec decoder(NULL, &serverPrivateKey);
         decoder.decrypt(data, decoded); // */
         // decrypt incoming message with server private key (and SK of course)
@@ -202,12 +206,12 @@ void* worker_secure_js_script(gearman_job_st* job, void* context, size_t* result
 //        CGW_DEBUG("INPUT %lu = %s HASH: %s", data.size(), CGW::buff2hex2(data).c_str(), CGW::sha1(data).c_str());
         // decode query from base64
 
-        CGW::buffer_t privKey;
-        CGW::str_t privateB64("MIICXAIBAAKBgQCxBPm2juRg8V5bLptl6SaecEryLor5qYwyaRnPgdE18R0gxrokimOJC9M8ElzDVx5zVnsyKdyidaUOnAHyPXk26BXcDiY2i8/47II9ZqAZjwZ+dEJe82nbsf0qvjPQ20LUB/G5cCFBdp4H+cIYxaMCFDh72l00GFT5LgY74mBevwIDAQABAoGBAKdfCfA3aO3UKZ/TEHEqIi6aA/K6WQK38WvUfef6WWJESIMuAt/7zSLOAHqC7hxwKcVp1m/WrtsYmuiWTyzIPOs9tWUeOqt6qJWU6XF0vO2yDin361x1bh13S8sJFJv6kuqdmp/XNFwzlwWGzzlyq1yOJk8aR0NrqpqdNKtwKyEpAkEA6yqR4x0BvhCeCq8OPb9lU6rvuYR6aeWXSpB9btBa7xYi0VxQ6P1gcUXhA8bru1o85XKSf+05Zc3vs9DbFnlW8wJBAMCzq3zzC/0UjACDOnh5pCcU3I03htv+K/tXwz1rJhuj5/bLW6OEhba7WIRsYe0b/lvSce8KhLKX7uJzLj/6pAUCQQCgUWcfU3kKn71+PxUQV1i2j0PaT0w8wT5AoPxB/VzgvVCDNdIa5BFJZ4Ac2RF/qeb17QOenpSQqLIO/gU97v6tAkBRhLAq73ZG3YZMQTde97ZlggG7C55VOjTI4tuJA+bfEntyf5yIk+ss3hwYCPF0KL91gJUKFl0EYBmCWk9aaWExAj8sMaAxb9i/10BbbXrwRrU0s/0BTnTV47KloMUHmryIY1HnqeL4o483u7UuW2O/s3lK+Djns6tQtrfSGkPgJts=");
-        THROW(CGW::base64decode(privKey, STR2B(privateB64)));
+//        CGW::buffer_t privKey;
+//        CGW::str_t privateB64(Settings->serverPrivateKey);
+//        THROW(CGW::base64decode(privKey, STR2B(privateB64)));
 //        CGW_DEBUG("PRIV KEY DECODED %lu HASH %s", privKey.size(), CGW::sha1(privKey).c_str());
 
-        CGW::RSA_private serverPrivateKey(privKey);
+        CGW::RSA_private serverPrivateKey(Settings->serverPrivateKey);
         CGW::codec decoder(NULL, &serverPrivateKey);
         decoder.decrypt(data, decoded); // */
         // decrypt incoming message with server private key (and SK of course)
@@ -443,6 +447,14 @@ void *worker_builder( void *ptr ) {
 int main(void) {
   CGW::AES::init();
 
+  try {
+    Settings = new CGW::settings();
+  }
+  catch(CGW::error_t& error) {
+    printf("ERROR %s\n", error.get_text().c_str());
+    exit(1);
+  };
+
   //generate_keys();
   pthread_t threads[THREADS];
   for(int i = 0; i < THREADS; i++)
@@ -456,5 +468,6 @@ int main(void) {
       pthread_join(threads[i], NULL);
 
   printf("All %d threads finishes their jobs.\n", THREADS); // */
+  delete Settings;
   return 0;
 }
