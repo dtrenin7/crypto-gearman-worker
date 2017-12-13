@@ -69,6 +69,47 @@ void* worker_execute_js(gearman_job_st* job, void* context, size_t* result_size,
     return NULL;
 }
 
+void* worker_get_tx_result(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
+  const char* workload = (const char*)gearman_job_workload(job);
+  size_t workload_size = gearman_job_workload_size(job);
+  if(workload && workload_size) {
+    CGW::error_t error;
+    CGW::str_t response, tx(workload, workload_size);
+    try {
+      CGW::Ethereum eth;
+      response = eth.run("web3.eth.getTransactionReceipt('" + tx + "')");
+      if( response.find("blockNumber") != std::string::npos &&
+        response.find("blockHash") != std::string::npos ) {
+          size_t len = response.length();
+          if( len && response[len-1] == '\n')
+            len--;  // omit line feed at end
+      }
+      else {
+        response = "false";
+      }
+    }
+    catch(const std::exception &e) {
+      response = e.what();
+    }
+    catch(CGW::error_t& err) {
+      response = err.get_text().c_str();
+    }
+
+    GEARMAN_CHECK(gearman_job_send_status(job, 0, workload_size));
+    // start progress count
+
+    GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), response.length()));
+    // send result
+
+    GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
+    // end progress count
+  }
+  *result_size = 0;
+  *result = GEARMAN_SUCCESS;
+  return NULL;
+}
+
+
 void* worker_generate_rsa_pair(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
     const char* workload = (const char*)gearman_job_workload(job);
     size_t workload_size = gearman_job_workload_size(job);
@@ -428,6 +469,7 @@ void *worker_builder( void *ptr ) {
     add_worker_function("key", worker_generate_rsa_pair);
     add_worker_function("secure_js", worker_secure_js);
     add_worker_function("secure_js_script", worker_secure_js_script);
+    add_worker_function("get_tx_result", worker_get_tx_result);
 
     gearman_worker_add_server(&worker, "localhost", 4730);
 
