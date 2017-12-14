@@ -1,34 +1,37 @@
 #ifndef CGW_ETHEREUM
 #define CGW_ETHEREUM
 
-#include <string>
+#include "cgw-types.h"
+#include "json.hpp"
 
 namespace CGW {
 // ============================================================================
 class Ethereum {
-  std::string db;       // data dir
-  std::string ipc;      // IPC attach hole
-  std::string jspath;   // path to JS scripts folder
+  str_t db;       // data dir
+  str_t ipc;      // IPC attach hole
+  str_t jspath;   // path to JS scripts folder
 
-  std::string exec(const char* cmd); // launch external app & get response
+  str_t exec(cstrptr_t cmd); // launch external app & get response
 
 public:
-  Ethereum(const char* _db = "/db", const char* _ipc = "/db/geth.ipc",
-    const char* _jspath = "/home/dtrenin/job/crypto-gearman-worker/src/scripts");
+  Ethereum(cstrptr_t _db = "/db", cstrptr_t _ipc = "/db/geth.ipc",
+    cstrptr_t _jspath = "/home/dtrenin/job/crypto-gearman-worker/src/scripts"); // TODO: move to settings
   virtual ~Ethereum();
 
-  std::string getScriptPath(std::string script);
+  str_t getScriptPath(str_t script);
 
-  std::string run(std::string command); // execute Web3 JS command
-  std::string runScript(std::string scriptFileName);  // execute JS script
+  str_t run(str_t command);                 // execute Web3 JS command
+  str_t runScript(str_t scriptFileName);    // execute JS script
+  str_t runJsonScript(buffer_t& jsondata);  // execute JS script (args in JSON)
+  str_t runJsonScript(nlohmann::json& jsondata);
 
-  std::string createAccountCmd(std::string password);
-  std::string unlockAccountCmd(std::string account, std::string password);
-  std::string lockAccountCmd(std::string account);
+  str_t createAccountCmd(str_t password);
+  str_t unlockAccountCmd(str_t account, str_t password);
+  str_t lockAccountCmd(str_t account);
 
-  std::string createAccount(std::string password);
-  std::string unlockAccount(std::string account, std::string password);
-  std::string lockAccount(std::string account);
+  str_t createAccount(str_t password);
+  str_t unlockAccount(str_t account, str_t password);
+  str_t lockAccount(str_t account);
 };
 // ============================================================================
 }; // namespace CGW
