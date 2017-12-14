@@ -215,6 +215,70 @@ void* worker_make_certificate(gearman_job_st* job, void* context, size_t* result
     return NULL;
 }
 
+void* worker_make_subject(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
+    const char* workload = (const char*)gearman_job_workload(job);
+    size_t workload_size = gearman_job_workload_size(job);
+    if(workload && workload_size) {
+      CGW::error_t error;
+      CGW::str_t response;
+      CGW::buffer_t base64data(workload_size), data;
+      try {
+        memcpy(&base64data[0], workload, workload_size);
+        THROW(CGW::base64decode(data, base64data));
+        // decode query from base64
+
+        auto jdata = json::parse(data);
+        // decode JSON
+
+        CGW::str_t address = jdata.at("address").get<CGW::str_t>();
+        CGW::str_t account = jdata.at("account").get<CGW::str_t>();
+        CGW::str_t password = jdata.at("password").get<CGW::str_t>();
+        CGW::str_t subj_account = jdata.at("subj_account").get<CGW::str_t>();
+        CGW::str_t birthdate = jdata.at("birthdate").get<CGW::str_t>();
+        CGW::str_t name = jdata.at("name").get<CGW::str_t>();
+        CGW::str_t gender = jdata.at("gender").get<CGW::str_t>();
+        CGW::str_t origin = jdata.at("origin").get<CGW::str_t>();
+        // operator's ethereum account & password
+
+        json out= {
+          {"script", "add_subject"},
+          {"args", {
+            {"address", address},
+            {"account", account},
+            {"password", password},
+            {"subj_account", subj_account},
+            {"birthdate", birthdate},
+            {"name", name},
+            {"gender", gender},
+            {"origin", origin}
+          }}
+        };
+
+        CGW::Ethereum eth;
+        response = eth.runJsonScript(out);
+        // execute ethereum command
+    }
+    catch(const std::exception &e) {
+      response = e.what();
+    }
+    catch(CGW::error_t& err) {
+      response = err.get_text().c_str();
+    }
+
+    GEARMAN_CHECK(gearman_job_send_status(job, 0, workload_size));
+    // start progress count
+
+    GEARMAN_CHECK(gearman_job_send_data(job, response.c_str(), response.length()));
+    // send result
+
+    GEARMAN_CHECK(gearman_job_send_status(job, workload_size, workload_size));
+    // end progress count
+  }
+  *result_size = 0;
+  *result = GEARMAN_SUCCESS;
+  return NULL;
+}
+
 void* worker_secure_js(gearman_job_st* job, void* context, size_t* result_size, gearman_return_t* result) {
     const char* workload = (const char*)gearman_job_workload(job);
     size_t workload_size = gearman_job_workload_size(job);
@@ -465,6 +529,7 @@ void *worker_builder( void *ptr ) {
     add_worker_function("secure_js_script", worker_secure_js_script);
     add_worker_function("get_tx_result", worker_get_tx_result);
     add_worker_function("make_certificate", worker_make_certificate);
+    add_worker_function("make_subject", worker_make_subject);
 
     gearman_worker_add_server(&worker, "localhost", 4730);
 
