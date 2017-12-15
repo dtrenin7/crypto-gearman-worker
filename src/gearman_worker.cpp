@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string>
+#include <unordered_set>
 
 #include "crypto.h"
 #include "cgw-ethereum.h"
@@ -158,6 +159,45 @@ GEARMAN_WORKER_B64(make_subject) {
   response = eth.runJsonScript(out);
 } GEARMAN_WORKER_END;
 
+GEARMAN_WORKER_B64(get_certificates) {
+  auto jdata = json::parse(input);
+  // decode JSON
+
+  CGW::str_t addrs("'");
+  std::unordered_set<CGW::str_t> addresses =
+    jdata.at("addresses").get<std::unordered_set<CGW::str_t>>();
+  for( std::unordered_set<CGW::str_t>::iterator itr = addresses.begin();
+    itr != addresses.end(); itr++) {
+    if( itr != addresses.begin() )
+      addrs += "$";
+    addrs += *itr;
+  }
+  addrs += "'";
+
+  json out= {
+    {"script", "read_certificates"},
+    {"args", {
+      {"addresses", addrs}
+    }}
+  };
+
+  CGW::Ethereum eth;
+  response = eth.runJsonScript(out);
+} GEARMAN_WORKER_END;
+
+GEARMAN_WORKER(get_subject) {
+  json out= {
+    {"script", "get_subject"},
+    {"args", {
+      {"address", input}
+    }}
+  };
+
+  CGW::Ethereum eth;
+  response = eth.runJsonScript(out);
+} GEARMAN_WORKER_END;
+
+
 GEARMAN_WORKER(secure_js) {
   CGW::buffer_t data, decoded, encoded;
   CGW::hex2buff(input.c_str(), data);
@@ -275,6 +315,8 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(get_tx_result);
     ADD_GEARMAN_WORKER(make_certificate);
     ADD_GEARMAN_WORKER(make_subject);
+    ADD_GEARMAN_WORKER(get_subject);
+    ADD_GEARMAN_WORKER(get_certificates);
     ADD_GEARMAN_WORKER(get_balance);
 
     gearman_worker_add_server(&worker, "localhost", 4730);

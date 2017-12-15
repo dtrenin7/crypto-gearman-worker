@@ -1,7 +1,6 @@
 try {
-  var balanceWei = web3.eth.getBalance($$$account$$$);
-  var balanceEth = web3.fromWei(balanceWei, 'ether');
-  balanceEth = balanceEth.replace('e+', 'e'); // dumb ethereum fix for BigNumber
+  var balanceWei = web3.eth.getBalance($$$account$$$).toString().replace('e+', 'e');
+  var balanceEth = web3.fromWei(balanceWei, 'ether').toString().replace('e+', 'e');
   balance = {
     weis: balanceWei,
     ethers: balanceEth
