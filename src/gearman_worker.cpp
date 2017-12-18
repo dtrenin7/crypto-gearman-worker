@@ -185,6 +185,48 @@ GEARMAN_WORKER_B64(get_certificates) {
   response = eth.runJsonScript(out);
 } GEARMAN_WORKER_END;
 
+GEARMAN_WORKER_B64(sign) {
+  auto jdata = json::parse(input);
+  // decode JSON
+
+  CGW::str_t address = jdata.at("address").get<CGW::str_t>();
+  CGW::str_t account = jdata.at("account").get<CGW::str_t>();
+  CGW::str_t password = jdata.at("password").get<CGW::str_t>();
+
+  json out= {
+    {"script", "sign"},
+    {"args", {
+      {"address", address},
+      {"account", account},
+      {"password", password}
+    }}
+  };
+
+  CGW::Ethereum eth;
+  response = eth.runJsonScript(out);
+} GEARMAN_WORKER_END;
+
+GEARMAN_WORKER_B64(cancel) {
+  auto jdata = json::parse(input);
+  // decode JSON
+
+  CGW::str_t address = jdata.at("address").get<CGW::str_t>();
+  CGW::str_t account = jdata.at("account").get<CGW::str_t>();
+  CGW::str_t password = jdata.at("password").get<CGW::str_t>();
+
+  json out= {
+    {"script", "cancel"},
+    {"args", {
+      {"address", address},
+      {"account", account},
+      {"password", password}
+    }}
+  };
+
+  CGW::Ethereum eth;
+  response = eth.runJsonScript(out);
+} GEARMAN_WORKER_END;
+
 GEARMAN_WORKER(get_subject) {
   json out= {
     {"script", "get_subject"},
@@ -318,6 +360,8 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(get_subject);
     ADD_GEARMAN_WORKER(get_certificates);
     ADD_GEARMAN_WORKER(get_balance);
+    ADD_GEARMAN_WORKER(sign);
+    ADD_GEARMAN_WORKER(cancel);
 
     gearman_worker_add_server(&worker, "localhost", 4730);
 

@@ -121,7 +121,7 @@ try {
   var certificateProxy = web3.eth.contract(certificateProto.abi);
   var contract = certificateProxy.at($$$address$$$);
 
-  var transactionHash = contract.sign(new Date().getTime().toString(), {from:$$$account$$$, gas: 2000000});
+  var transactionHash = contract.cancel(new Date().getTime().toString(), {from:$$$account$$$, gas: 2000000});
 
   web3.personal.lockAccount($$$account$$$);
   console.log(transactionHash);
