@@ -159,7 +159,7 @@ try {
       subject.certificates = [];
       var numCerts = new Number(props[5]);
       for(var k = 0; k < numCerts; k++) {
-        subject.certificates.push(subjContract.getCertificate(j));
+        subject.certificates.push(subjContract.getCertificate(k));
       } //*/
 
       cert.subjects.push(subject);
