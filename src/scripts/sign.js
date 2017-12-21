@@ -121,12 +121,17 @@ try {
   var certificateProxy = web3.eth.contract(certificateProto.abi);
   var contract = certificateProxy.at($$$address$$$);
 
-  var approxTxGas = 100000 + 42000; // sign + transfer(twice)
-  var approxTxPrice = new BigNumber(web3.toWei(30, "gwei")).times(approxTxGas); // average gas price
+  var approxTxGas = 70000 + 21000; // sign + transfer(twice)
+  var maxGasPrice = new BigNumber(web3.toWei(20, "gwei"));
+  var approxTxPrice = maxGasPrice.times(approxTxGas); // average gas price
+  var balance = new BigNumber(web3.eth.getBalance($$$account$$$));
+  if( balance.lessThan(approxTxPrice) )
+    throw "insufficient funds for gas";
+
   var _value = new BigNumber(web3.eth.getBalance($$$account$$$)).minus(approxTxPrice);
 
   var transactionHash = contract.sign(new Date().getTime().toString(),
-    {from:$$$account$$$, to:$$$address$$$, value:_value.toString(), gas:140000});
+    {from:$$$account$$$, to:$$$address$$$, value:_value.toString(), gas:91000, gasPrice:maxGasPrice.toString()});
 
   web3.personal.lockAccount($$$account$$$);
   console.log(transactionHash);
