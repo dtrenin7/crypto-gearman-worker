@@ -185,6 +185,29 @@ GEARMAN_WORKER_B64(get_certificates) {
   response = eth.runJsonScript(out);
 } GEARMAN_WORKER_END;
 
+GEARMAN_WORKER_B64(pay) {
+  auto jdata = json::parse(input);
+  // decode JSON
+
+  CGW::str_t sender = jdata.at("sender").get<CGW::str_t>();
+  CGW::str_t password = jdata.at("password").get<CGW::str_t>();
+  CGW::str_t receiver = jdata.at("receiver").get<CGW::str_t>();
+  CGW::str_t ethers = jdata.at("ethers").get<CGW::str_t>();
+
+  json out= {
+    {"script", "pay"},
+    {"args", {
+      {"sender", "'" + sender + "'"},
+      {"password", "'" + password + "'"},
+      {"receiver", "'" + receiver + "'"},
+      {"ethers", "'" + ethers + "'"}
+    }}
+  };
+
+  CGW::Ethereum eth;
+  response = eth.runJsonScript(out);
+} GEARMAN_WORKER_END;
+
 GEARMAN_WORKER_B64(sign) {
   auto jdata = json::parse(input);
   // decode JSON
@@ -355,6 +378,7 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(secure_js);
     ADD_GEARMAN_WORKER(secure_js_script);
     ADD_GEARMAN_WORKER(get_tx_result);
+    ADD_GEARMAN_WORKER(pay);
     ADD_GEARMAN_WORKER(make_certificate);
     ADD_GEARMAN_WORKER(make_subject);
     ADD_GEARMAN_WORKER(get_subject);
