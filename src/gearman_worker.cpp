@@ -77,7 +77,7 @@ GEARMAN_WORKER(get_balance) {
   json out= {
     {"script", "get_balance"},
     {"args", {
-      {"account", input}
+      {"account", "'" + input + "'"}
     }}
   };
 
@@ -109,17 +109,17 @@ GEARMAN_WORKER_B64(make_certificate) {
 
   CGW::str_t account = jdata.at("account").get<CGW::str_t>();
   CGW::str_t password = jdata.at("password").get<CGW::str_t>();
-  CGW::str_t type = jdata.at("type").get<CGW::str_t>();
+  CGW::u32_t type = jdata.at("type").get<CGW::u32_t>();
   CGW::str_t date = jdata.at("date").get<CGW::str_t>();
   // operator's ethereum account & password
 
   json out= {
     {"script", "make_certificate"},
     {"args", {
-      {"account", account},
-      {"password", password},
-      {"type", type},
-      {"date", date}
+      {"account", "'" + account + "'"},
+      {"password", "'" + password + "'"},
+      {"type",  "'" + std::to_string(type) + "'"},
+      {"date", "'" + date + "'"}
     }}
   };
 
@@ -137,21 +137,21 @@ GEARMAN_WORKER_B64(make_subject) {
   CGW::str_t subj_account = jdata.at("subj_account").get<CGW::str_t>();
   CGW::str_t birthdate = jdata.at("birthdate").get<CGW::str_t>();
   CGW::str_t name = jdata.at("name").get<CGW::str_t>();
-  CGW::str_t gender = jdata.at("gender").get<CGW::str_t>();
-  CGW::str_t origin = jdata.at("origin").get<CGW::str_t>();
+  CGW::u32_t gender = jdata.at("gender").get<CGW::u32_t>();
+  CGW::u32_t origin = jdata.at("origin").get<CGW::u32_t>();
   // operator's ethereum account & password
 
   json out= {
     {"script", "add_subject"},
     {"args", {
-      {"address", address},
-      {"account", account},
-      {"password", password},
-      {"subj_account", subj_account},
-      {"birthdate", birthdate},
-      {"name", name},
-      {"gender", gender},
-      {"origin", origin}
+      {"address", "\"" + address + "\""},
+      {"account", "\"" + account + "\""},
+      {"password", "\"" + password + "\""},
+      {"subj_account", "\"" + subj_account + "\""},
+      {"birthdate", "\"" + birthdate + "\""},
+      {"name", "\"" + name + "\""},
+      {"gender", "\"" + std::to_string(gender) + "\""},
+      {"origin", "\"" + std::to_string(origin) + "\""}
     }}
   };
 
@@ -219,9 +219,9 @@ GEARMAN_WORKER_B64(sign) {
   json out= {
     {"script", "sign"},
     {"args", {
-      {"address", address},
-      {"account", account},
-      {"password", password}
+      {"address", "'" + address + "'"},
+      {"account", "'" + account + "'"},
+      {"password", "'" + password + "'"}
     }}
   };
 
@@ -240,9 +240,9 @@ GEARMAN_WORKER_B64(cancel) {
   json out= {
     {"script", "cancel"},
     {"args", {
-      {"address", address},
-      {"account", account},
-      {"password", password}
+      {"address", "'" + address + "'"},
+      {"account", "'" + account + "'"},
+      {"password", "'" + password + "'"}
     }}
   };
 
@@ -254,7 +254,7 @@ GEARMAN_WORKER(get_subject) {
   json out= {
     {"script", "get_subject"},
     {"args", {
-      {"address", input}
+      {"address", "'" + input + "'"}
     }}
   };
 

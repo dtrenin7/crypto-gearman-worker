@@ -152,7 +152,7 @@ try {
       var subjContract = subjectProxy.at(subject.address);
       var props = subjContract.getProps();
       subject.ID = new Number(props[0]);
-      subject.birthdate = new Number(props[1]);
+      subject.birthdate = new Number(props[1]).toString();
       subject.name = props[2];
       subject.gender = new Number(props[3]);
       subject.origin = new Number(props[4]);
