@@ -387,7 +387,7 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(sign);
     ADD_GEARMAN_WORKER(cancel);
 
-    gearman_worker_add_server(&worker, "localhost", 4730);
+    gearman_worker_add_server(&worker, "0.0.0.0", 4730);
 
     while(true) {
         result = gearman_worker_work(&worker);
