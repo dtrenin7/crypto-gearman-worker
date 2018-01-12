@@ -111,7 +111,16 @@ GEARMAN_WORKER_B64(make_certificate) {
   CGW::str_t password = jdata.at("password").get<CGW::str_t>();
   CGW::u32_t type = jdata.at("type").get<CGW::u32_t>();
   CGW::str_t date = jdata.at("date").get<CGW::str_t>();
-  // operator's ethereum account & password
+  CGW::str_t addrs("'");
+  std::unordered_set<CGW::str_t> addresses =
+    jdata.at("subject_addrs").get<std::unordered_set<CGW::str_t>>();
+  for( std::unordered_set<CGW::str_t>::iterator itr = addresses.begin();
+    itr != addresses.end(); itr++) {
+    if( itr != addresses.begin() )
+      addrs += "$";
+    addrs += *itr;
+  }
+  addrs += "'";
 
   json out= {
     {"script", "make_certificate"},
@@ -119,7 +128,8 @@ GEARMAN_WORKER_B64(make_certificate) {
       {"account", "'" + account + "'"},
       {"password", "'" + password + "'"},
       {"type",  "'" + std::to_string(type) + "'"},
-      {"date", "'" + date + "'"}
+      {"date", "'" + date + "'"},
+      {"subject_addrs", addrs}
     }}
   };
 
@@ -215,17 +225,27 @@ GEARMAN_WORKER_B64(pay) {
 GEARMAN_WORKER_B64(sign) {
   auto jdata = json::parse(input);
   // decode JSON
-
+  // $$$id$$$, $$$validate_hash$$$, $$$birthday$$$, $$$gender$$$, new Date().getTime().toString(), $$$fullname$$$
   CGW::str_t address = jdata.at("address").get<CGW::str_t>();
   CGW::str_t account = jdata.at("account").get<CGW::str_t>();
   CGW::str_t password = jdata.at("password").get<CGW::str_t>();
+  CGW::str_t id = jdata.at("id").get<CGW::str_t>();
+  CGW::str_t validate_hash = jdata.at("validate_hash").get<CGW::str_t>();
+  CGW::str_t birthday = jdata.at("birthday").get<CGW::str_t>();
+  CGW::u32_t gender = jdata.at("gender").get<CGW::u32_t>();
+  CGW::str_t fullname = jdata.at("fullname").get<CGW::str_t>();
 
   json out= {
     {"script", "sign"},
     {"args", {
       {"address", "'" + address + "'"},
       {"account", "'" + account + "'"},
-      {"password", "'" + password + "'"}
+      {"password", "'" + password + "'"},
+      {"id", "'" + id + "'"},
+      {"validate_hash", "'" + validate_hash + "'"},
+      {"birthday", "'" + birthday + "'"},
+      {"gender", "'" + std::to_string(gender) + "'"},
+      {"fullname", "'" + fullname + "'"}
     }}
   };
 
