@@ -43,6 +43,7 @@ error_t b64encode(buffer_t& out, const buffer_t& in);
 
 error_t base64decode(buffer_t& out, const buffer_t& in);
 error_t b64decode(buffer_t& out, const buffer_t& in);
+str_t b64decode(const str_t& in);
 // decode from Base64
 // ***BEWARE*** BUGGY on random data!!! (use urlencode before or don't use)
 

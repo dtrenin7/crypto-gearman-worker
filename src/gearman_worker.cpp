@@ -149,7 +149,7 @@ GEARMAN_WORKER_B64(make_subject) {
       {"password", "\"" + password + "\""},
       {"subj_account", "\"" + subj_account + "\""},
       {"birthdate", "\"" + birthdate + "\""},
-      {"name", "\"" + name + "\""},
+      {"name", "\"" + CGW::b64decode(name) + "\""},
       {"gender", "\"" + std::to_string(gender) + "\""},
       {"origin", "\"" + std::to_string(origin) + "\""}
     }}
@@ -157,6 +157,10 @@ GEARMAN_WORKER_B64(make_subject) {
 
   CGW::Ethereum eth;
   response = eth.runJsonScript(out);
+} GEARMAN_WORKER_END;
+
+GEARMAN_WORKER(testUtf8) {
+  response = CGW::b64decode(input);
 } GEARMAN_WORKER_END;
 
 GEARMAN_WORKER_B64(get_certificates) {
@@ -374,6 +378,7 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(execute_js);
     ADD_GEARMAN_WORKER(execute_js_script);
     ADD_GEARMAN_WORKER(test);
+    ADD_GEARMAN_WORKER(testUtf8);
     ADD_GEARMAN_WORKER(key);
     ADD_GEARMAN_WORKER(secure_js);
     ADD_GEARMAN_WORKER(secure_js_script);

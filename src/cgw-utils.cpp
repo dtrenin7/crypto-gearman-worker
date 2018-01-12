@@ -268,6 +268,36 @@ error_t b64decode(buffer_t& out, const buffer_t& in)
     return STATUS(E_OK);
 }
 
+str_t b64decode(const str_t& in)
+{
+    str_t out;
+    void* data = (void*)in.data();
+    size_t len = in.size();
+    unsigned char* p = (unsigned char*)data;
+    int pad = len > 0 && (len % 4 || p[len - 1] == '=');
+    const size_t L = ((len + 3) / 4 - pad) * 4;
+    out.resize(L / 4 * 3 + pad);
+
+    for (size_t i = 0, j = 0; i < L; i += 4)
+    {
+        int n = B64index[p[i]] << 18 | B64index[p[i + 1]] << 12 | B64index[p[i + 2]] << 6 | B64index[p[i + 3]];
+        out[j++] = n >> 16;
+        out[j++] = n >> 8 & 0xFF;
+        out[j++] = n & 0xFF;
+    }
+    if (pad)
+    {
+        int n = B64index[p[L]] << 18 | B64index[p[L + 1]] << 12;
+        out[out.size() - 1] = n >> 16;
+
+        if (len > L + 2 && p[L + 2] != '=')
+        {
+            n |= B64index[p[L + 2]] << 6;
+            out.push_back(n >> 8 & 0xFF);
+        }
+    }
+    return out;
+}
 
 str_t random_str(u32_t size) {
 
