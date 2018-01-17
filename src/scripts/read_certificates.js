@@ -143,11 +143,11 @@ try {
       subject.gender = new Number(props[4]);
       subject.dt_sign = new Number(props[5]).toString();
       if(subject.dt_sign != "0") {
-        subject.numSigns++;
+        cert.numSigns++;
       }
       subject.dt_cancel = new Number(props[6]).toString();
       if(subject.dt_cancel != "0") {
-        subject.numCancelations++;
+        cert.numCancelations++;
       }
       cert.subjects.push(subject);
     }
