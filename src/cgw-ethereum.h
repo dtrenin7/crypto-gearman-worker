@@ -3,6 +3,7 @@
 
 #include "cgw-types.h"
 #include "json.hpp"
+#include "cgw-settings.h"
 
 namespace CGW {
 // ============================================================================
@@ -14,8 +15,7 @@ class Ethereum {
   str_t exec(cstrptr_t cmd); // launch external app & get response
 
 public:
-  Ethereum(cstrptr_t _db = "/db", cstrptr_t _ipc = "/db/geth.ipc",
-    cstrptr_t _jspath = "/home/dtrenin/job/crypto-gearman-worker/src/scripts"); // TODO: move to settings
+  Ethereum();
   virtual ~Ethereum();
 
   str_t getScriptPath(str_t script);

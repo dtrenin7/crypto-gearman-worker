@@ -15,14 +15,22 @@
 
 namespace CGW {
 
+struct settings_ethereum {
+  str_t db;         ///< путь к базе данных
+  str_t ipc;        ///< путь к .ipc файлу с настройками
+  str_t scripts;    ///< путь к каталогу с .js скриптами
+};
+
 class settings {
 public:
   settings();
 
   buffer_t   serverPublicKey;            ///< server public key (RSA)
   buffer_t   serverPrivateKey;           ///< server private key (RSA)
+  settings_ethereum eth;                 ///< ethereum settings
 };
 
+extern settings* Settings;
 };	// namespace CGW
 
 #endif /* SRC_CGW_SETTINGS_H_ */

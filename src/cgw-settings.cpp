@@ -13,6 +13,7 @@
 #include "cgw-utils.h"
 
 namespace CGW {
+  settings* Settings;
 
 #define READ_STRING(key, ini_section, ini_key) { conf_value.clear();\
     if( config.read(str_t(ini_section), str_t(ini_key), conf_value) == E_OK )\
@@ -39,6 +40,13 @@ settings::settings() {
 
     READ_BASE64(serverPublicKey, "server", "publicKey");
     READ_BASE64(serverPrivateKey, "server", "privateKey");
+
+    str_t eth_config;
+    READ_STRING(eth_config, "ethereum-common", "network"); // real or local or other
+    str_t eth_node = "ethereum-" + eth_config;
+    READ_STRING(eth.db, eth_node, "db");
+    READ_STRING(eth.ipc, eth_node, "ipc");
+    READ_STRING(eth.scripts, eth_node, "scripts");
 
     CGW_INFO("Reading settings done...");
     // read settings from config and/or environment */

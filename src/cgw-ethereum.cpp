@@ -12,8 +12,10 @@ namespace CGW {
 // ============================================================================
 using json = nlohmann::json;
 
-Ethereum::Ethereum(cstrptr_t _db, cstrptr_t _ipc, cstrptr_t _jspath) :
-  db(_db), ipc(_ipc), jspath(_jspath) {
+Ethereum::Ethereum() {
+  db = Settings->eth.db;
+  ipc = Settings->eth.ipc;
+  jspath = Settings->eth.scripts;
 }
 
 Ethereum::~Ethereum() {

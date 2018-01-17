@@ -18,8 +18,6 @@
 
 using json = nlohmann::json;
 
-CGW::settings* Settings;
-
 #define GEARMAN_CHECK(x) if(gearman_failed(x)) { *result_size = 0; *result = GEARMAN_ERROR; return NULL; }
 
 #define GEARMAN_WORKER(name) void* worker_##name(gearman_job_st* job,\
@@ -137,38 +135,6 @@ GEARMAN_WORKER_B64(make_certificate) {
   response = eth.runJsonScript(out);
 } GEARMAN_WORKER_END;
 
-GEARMAN_WORKER_B64(make_subject) {
-  auto jdata = json::parse(input);
-  // decode JSON
-
-  CGW::str_t address = jdata.at("address").get<CGW::str_t>();
-  CGW::str_t account = jdata.at("account").get<CGW::str_t>();
-  CGW::str_t password = jdata.at("password").get<CGW::str_t>();
-  CGW::str_t subj_account = jdata.at("subj_account").get<CGW::str_t>();
-  CGW::str_t birthdate = jdata.at("birthdate").get<CGW::str_t>();
-  CGW::str_t name = jdata.at("name").get<CGW::str_t>();
-  CGW::u32_t gender = jdata.at("gender").get<CGW::u32_t>();
-  CGW::u32_t origin = jdata.at("origin").get<CGW::u32_t>();
-  // operator's ethereum account & password
-
-  json out= {
-    {"script", "add_subject"},
-    {"args", {
-      {"address", "\"" + address + "\""},
-      {"account", "\"" + account + "\""},
-      {"password", "\"" + password + "\""},
-      {"subj_account", "\"" + subj_account + "\""},
-      {"birthdate", "\"" + birthdate + "\""},
-      {"name", "\"" + CGW::b64decode(name) + "\""},
-      {"gender", "\"" + std::to_string(gender) + "\""},
-      {"origin", "\"" + std::to_string(origin) + "\""}
-    }}
-  };
-
-  CGW::Ethereum eth;
-  response = eth.runJsonScript(out);
-} GEARMAN_WORKER_END;
-
 GEARMAN_WORKER(testUtf8) {
   response = CGW::b64decode(input);
 } GEARMAN_WORKER_END;
@@ -245,7 +211,7 @@ GEARMAN_WORKER_B64(sign) {
       {"validate_hash", "'" + validate_hash + "'"},
       {"birthday", "'" + birthday + "'"},
       {"gender", "'" + std::to_string(gender) + "'"},
-      {"fullname", "'" + fullname + "'"}
+      {"fullname", "'" + CGW::b64decode(fullname) + "'"}
     }}
   };
 
@@ -274,11 +240,18 @@ GEARMAN_WORKER_B64(cancel) {
   response = eth.runJsonScript(out);
 } GEARMAN_WORKER_END;
 
-GEARMAN_WORKER(get_subject) {
+GEARMAN_WORKER_B64(get_subject) {
+  auto jdata = json::parse(input);
+  // decode JSON
+
+  CGW::str_t address = jdata.at("address").get<CGW::str_t>();
+  CGW::u32_t index = jdata.at("index").get<CGW::u32_t>();
+
   json out= {
     {"script", "get_subject"},
     {"args", {
-      {"address", "'" + input + "'"}
+      {"address", "'" + address + "'"},
+      {"index", "'" + std::to_string(index) + "'"}
     }}
   };
 
@@ -291,7 +264,7 @@ GEARMAN_WORKER(secure_js) {
   CGW::buffer_t data, decoded, encoded;
   CGW::hex2buff(input.c_str(), data);
 
-  CGW::RSA_private serverPrivateKey(Settings->serverPrivateKey);
+  CGW::RSA_private serverPrivateKey(CGW::Settings->serverPrivateKey);
   CGW::codec decoder(NULL, &serverPrivateKey);
   decoder.decrypt(data, decoded);
   // decrypt incoming message with server private key (and SK of course)
@@ -333,7 +306,7 @@ GEARMAN_WORKER(secure_js_script) {
 //        CGW_DEBUG("INPUT %lu = %s HASH: %s", data.size(), CGW::buff2hex2(data).c_str(), CGW::sha1(data).c_str());
   // decode query from base64
 
-  CGW::RSA_private serverPrivateKey(Settings->serverPrivateKey);
+  CGW::RSA_private serverPrivateKey(CGW::Settings->serverPrivateKey);
   CGW::codec decoder(NULL, &serverPrivateKey);
   decoder.decrypt(data, decoded); // */
   // decrypt incoming message with server private key (and SK of course)
@@ -405,7 +378,6 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(get_tx_result);
     ADD_GEARMAN_WORKER(pay);
     ADD_GEARMAN_WORKER(make_certificate);
-    ADD_GEARMAN_WORKER(make_subject);
     ADD_GEARMAN_WORKER(get_subject);
     ADD_GEARMAN_WORKER(get_certificates);
     ADD_GEARMAN_WORKER(get_balance);
@@ -431,7 +403,7 @@ int main(void) {
   CGW::AES::init();
 
   try {
-    Settings = new CGW::settings();
+    CGW::Settings = new CGW::settings();
   }
   catch(CGW::error_t& error) {
     printf("ERROR %s\n", error.get_text().c_str());
@@ -451,6 +423,6 @@ int main(void) {
       pthread_join(threads[i], NULL);
 
   printf("All %d threads finishes their jobs.\n", THREADS); // */
-  delete Settings;
+  delete CGW::Settings;
   return 0;
 }
