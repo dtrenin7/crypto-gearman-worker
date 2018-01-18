@@ -364,7 +364,7 @@ void *worker_builder( void *ptr ) {
     gearman_worker_st worker;
     gearman_worker_create(&worker);
 
-    gearman_worker_set_timeout(&worker, 100);
+    gearman_worker_set_timeout(&worker, CGW::Settings->timeout);
 
     gearman_return_t result;
     ADD_GEARMAN_WORKER(create_account);
@@ -384,7 +384,7 @@ void *worker_builder( void *ptr ) {
     ADD_GEARMAN_WORKER(sign);
     ADD_GEARMAN_WORKER(cancel);
 
-    gearman_worker_add_server(&worker, "0.0.0.0", 4730);
+    gearman_worker_add_server(&worker, CGW::Settings->host.c_str(), CGW::Settings->port);
 
     while(true) {
         result = gearman_worker_work(&worker);
@@ -411,18 +411,19 @@ int main(void) {
   };
 
   //generate_keys();
-  pthread_t threads[THREADS];
-  for(int i = 0; i < THREADS; i++)
+  std::vector<pthread_t> threads(CGW::Settings->threads);
+  for(int i = 0; i < CGW::Settings->threads; i++)
       if(pthread_create(&threads[i], NULL, worker_builder, NULL)) {
           printf("Can't create thread\n");
           exit(1);
       }
-  printf("All %d threads created successfully.\n", THREADS);
+  printf("All %d threads created successfully.\n", CGW::Settings->threads);
 
   for(int i = 0; i < THREADS; i++)
       pthread_join(threads[i], NULL);
 
-  printf("All %d threads finishes their jobs.\n", THREADS); // */
+  printf("All %d threads finishes their jobs.\n", CGW::Settings->threads); // */
+  threads.clear();
   delete CGW::Settings;
   return 0;
 }

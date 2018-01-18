@@ -11,6 +11,7 @@ class Ethereum {
   str_t db;       // data dir
   str_t ipc;      // IPC attach hole
   str_t jspath;   // path to JS scripts folder
+  str_t gpath;    // path to geth
 
   str_t exec(cstrptr_t cmd); // launch external app & get response
 

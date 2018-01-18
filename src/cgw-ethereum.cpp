@@ -16,6 +16,7 @@ Ethereum::Ethereum() {
   db = Settings->eth.db;
   ipc = Settings->eth.ipc;
   jspath = Settings->eth.scripts;
+  gpath = Settings->eth.geth;
 }
 
 Ethereum::~Ethereum() {
@@ -39,12 +40,12 @@ str_t Ethereum::exec(cstrptr_t cmd) {
 }
 
 str_t Ethereum::run(str_t command) {
-  return exec(("geth attach ipc:" + ipc +
+  return exec((gpath + " attach ipc:" + ipc +
     " --datadir " + db + " --exec \"" + command + "\"").c_str());
 }
 
 str_t Ethereum::runScript(str_t scriptFileName) {
-  return exec(("geth attach ipc:" + ipc + " --datadir " + db + " --jspath " +
+  return exec((gpath + " attach ipc:" + ipc + " --datadir " + db + " --jspath " +
     jspath + " --exec 'loadScript(\"" + scriptFileName + ".js\")'").c_str());
 }
 
