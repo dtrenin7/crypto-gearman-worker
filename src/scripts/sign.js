@@ -112,28 +112,31 @@ var btoa = function ( s ) {
 ///////////////////////////// atob
 
 try {
-  var abiB64 = 'W3siY29uc3RhbnQiOnRydWUsImlucHV0cyI6W10sIm5hbWUiOiJnZXRDZXJ0aWZpY2F0ZSIsIm91dHB1dHMiOlt7Im5hbWUiOiJfdHlwZV9pZCIsInR5cGUiOiJ1aW50OCJ9LHsibmFtZSI6Il9kdF9jcmVhdGUiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9zdWJqZWN0c19jb3VudCIsInR5cGUiOiJ1aW50MjU2In1dLCJwYXlhYmxlIjpmYWxzZSwidHlwZSI6ImZ1bmN0aW9uIn0seyJjb25zdGFudCI6ZmFsc2UsImlucHV0cyI6W3sibmFtZSI6Il9pZCIsInR5cGUiOiJ1aW50MjU2In0seyJuYW1lIjoiX3ZhbGlkYXRlX2hhc2giLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9iaXJ0aGRheSIsInR5cGUiOiJ1aW50MjU2In0seyJuYW1lIjoiX2dlbmRlciIsInR5cGUiOiJ1aW50OCJ9LHsibmFtZSI6Il9kdF9zaWduIiwidHlwZSI6InVpbnQyNTYifSx7Im5hbWUiOiJfZnVsbG5hbWUiLCJ0eXBlIjoic3RyaW5nIn1dLCJuYW1lIjoiU2lnbiIsIm91dHB1dHMiOltdLCJwYXlhYmxlIjp0cnVlLCJ0eXBlIjoiZnVuY3Rpb24ifSx7ImNvbnN0YW50Ijp0cnVlLCJpbnB1dHMiOlt7Im5hbWUiOiJpbmRleCIsInR5cGUiOiJ1aW50MjU2In1dLCJuYW1lIjoiZ2V0U3ViamVjdCIsIm91dHB1dHMiOlt7Im5hbWUiOiJfaWQiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il92YWxpZGF0ZV9oYXNoIiwidHlwZSI6InVpbnQyNTYifSx7Im5hbWUiOiJfYmlydGhkYXkiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9mdWxsbmFtZSIsInR5cGUiOiJzdHJpbmcifSx7Im5hbWUiOiJfZ2VuZGVyIiwidHlwZSI6InVpbnQ4In0seyJuYW1lIjoiX2R0X3NpZ24iLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9kdF9jYW5jZWwiLCJ0eXBlIjoidWludDI1NiJ9XSwicGF5YWJsZSI6ZmFsc2UsInR5cGUiOiJmdW5jdGlvbiJ9LHsiaW5wdXRzIjpbeyJuYW1lIjoiX3R5cGVfaWQiLCJ0eXBlIjoidWludDgifSx7Im5hbWUiOiJfZHRfY3JlYXRlIiwidHlwZSI6InVpbnQyNTYifSx7Im5hbWUiOiJfc3ViamVjdHNfYWRkciIsInR5cGUiOiJhZGRyZXNzW10ifV0sInBheWFibGUiOmZhbHNlLCJ0eXBlIjoiY29uc3RydWN0b3IifV0=';
+  var abiB64 = 'W3siY29uc3RhbnQiOmZhbHNlLCJpbnB1dHMiOlt7Im5hbWUiOiJfaWQiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il92YWxpZGF0ZV9oYXNoIiwidHlwZSI6ImFkZHJlc3MifSx7Im5hbWUiOiJfYmlydGhkYXkiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9nZW5kZXIiLCJ0eXBlIjoidWludDgifSx7Im5hbWUiOiJfZHRfc2lnbiIsInR5cGUiOiJ1aW50MjU2In0seyJuYW1lIjoiX2Z1bGxuYW1lIiwidHlwZSI6InN0cmluZyJ9XSwibmFtZSI6IlNpZ24iLCJvdXRwdXRzIjpbXSwicGF5YWJsZSI6dHJ1ZSwidHlwZSI6ImZ1bmN0aW9uIn0seyJjb25zdGFudCI6dHJ1ZSwiaW5wdXRzIjpbXSwibmFtZSI6ImdldENlcnRpZmljYXRlIiwib3V0cHV0cyI6W3sibmFtZSI6Il90eXBlX2lkIiwidHlwZSI6InVpbnQ4In0seyJuYW1lIjoiX2R0X2NyZWF0ZSIsInR5cGUiOiJ1aW50MjU2In0seyJuYW1lIjoiX3N1YmplY3RzX2NvdW50IiwidHlwZSI6InVpbnQyNTYifV0sInBheWFibGUiOmZhbHNlLCJ0eXBlIjoiZnVuY3Rpb24ifSx7ImNvbnN0YW50Ijp0cnVlLCJpbnB1dHMiOlt7Im5hbWUiOiJpbmRleCIsInR5cGUiOiJ1aW50MjU2In1dLCJuYW1lIjoiZ2V0U3ViamVjdCIsIm91dHB1dHMiOlt7Im5hbWUiOiJfaWQiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il92YWxpZGF0ZV9oYXNoIiwidHlwZSI6ImFkZHJlc3MifSx7Im5hbWUiOiJfYmlydGhkYXkiLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9mdWxsbmFtZSIsInR5cGUiOiJzdHJpbmcifSx7Im5hbWUiOiJfZ2VuZGVyIiwidHlwZSI6InVpbnQ4In0seyJuYW1lIjoiX2R0X3NpZ24iLCJ0eXBlIjoidWludDI1NiJ9LHsibmFtZSI6Il9kdF9jYW5jZWwiLCJ0eXBlIjoidWludDI1NiJ9XSwicGF5YWJsZSI6ZmFsc2UsInR5cGUiOiJmdW5jdGlvbiJ9LHsiaW5wdXRzIjpbeyJuYW1lIjoiX3R5cGVfaWQiLCJ0eXBlIjoidWludDgifSx7Im5hbWUiOiJfZHRfY3JlYXRlIiwidHlwZSI6InVpbnQyNTYifSx7Im5hbWUiOiJfc3ViamVjdHNfYWRkciIsInR5cGUiOiJhZGRyZXNzW10ifV0sInBheWFibGUiOmZhbHNlLCJ0eXBlIjoiY29uc3RydWN0b3IifV0=';
   var abi = atob(abiB64);
   var certificateProxy = web3.eth.contract(JSON.parse(abi));
 
-  web3.personal.unlockAccount($$$account$$$, $$$password$$$);
+  var account = $$$account$$$;
+  var password = $$$password$$$;
+  var address = $$$address$$$;
+  web3.personal.unlockAccount(account, password);
 
-  var contract = certificateProxy.at($$$address$$$);
+  var contract = certificateProxy.at(address);
 
-  var approxTxGas = 900000 + 21000; // sign + transfer(twice)
+  var approxTxGas = 220000 + 21000; // sign + transfer(twice)
   var maxGasPrice = new BigNumber(web3.toWei(20, "gwei"));
   var approxTxPrice = maxGasPrice.times(approxTxGas); // average gas price
-  var balance = new BigNumber(web3.eth.getBalance($$$account$$$));
+  var balance = new BigNumber(web3.eth.getBalance(account));
   if( balance.lessThan(approxTxPrice) )
     throw "insufficient funds for gas";
 
-  var _value = new BigNumber(web3.eth.getBalance($$$account$$$)).minus(approxTxPrice);
+  var _value = new BigNumber(web3.eth.getBalance(account)).minus(approxTxPrice);
 
   // uint _id, uint _validate_hash, uint _birthday, uint8 _gender, uint _dt_sign, string _fullname
   var transactionHash = contract.Sign($$$id$$$, $$$validate_hash$$$, $$$birthday$$$, $$$gender$$$, new Date().getTime().toString(), $$$fullname$$$,
-    {from:$$$account$$$, to:$$$address$$$, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()});
+    {from:account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()});
 
-  web3.personal.lockAccount($$$account$$$);
+  web3.personal.lockAccount(account);
   console.log(transactionHash);
 }
 catch(e) {
