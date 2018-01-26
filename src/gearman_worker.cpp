@@ -128,6 +128,7 @@ GEARMAN_WORKER_B64(make_certificate) {
       {"type",  "'" + std::to_string(type) + "'"},
       {"date", "'" + date + "'"},
       {"subject_addrs", addrs}
+      //,{"noremove", ""}
     }}
   };
 
@@ -212,6 +213,7 @@ GEARMAN_WORKER_B64(sign) {
       {"birthday", "'" + birthday + "'"},
       {"gender", "'" + std::to_string(gender) + "'"},
       {"fullname", "'" + CGW::b64decode(fullname) + "'"}
+      //,{"noremove", ""}
     }}
   };
 

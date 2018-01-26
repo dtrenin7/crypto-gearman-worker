@@ -123,16 +123,31 @@ try {
 
   var contract = certificateProxy.at(address);
 
-  var approxTxGas = 220000 + 21000; // sign + transfer(twice)
+  var approxTxGas = 185000 + 21000; // sign + transfer(twice)
   var maxGasPrice = new BigNumber(web3.toWei(20, "gwei"));
+  //var shift = new BigNumber("700000000000000"); // 0.0007 eth
   var approxTxPrice = maxGasPrice.times(approxTxGas); // average gas price
   var balance = new BigNumber(web3.eth.getBalance(account));
-  if( balance.lessThan(approxTxPrice) )
+
+  var _value = new BigNumber(balance).minus(approxTxPrice);
+
+  try {
+    var signData = contract.Sign.getData($$$id$$$, $$$validate_hash$$$, $$$birthday$$$, $$$gender$$$, new Date().getTime().toString(), $$$fullname$$$,
+      {from:account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()});
+
+      var gas = new Number(web3.eth.estimateGas({data: signData, from: account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()})) + 37000;
+
+      approxTxPrice = maxGasPrice.times(gas);
+      _value = new BigNumber(balance).minus(approxTxPrice);
+  }
+  catch(e) {
+    console.log("ESTIMATION FAILED: " + e.toString());
+  };
+
+  if( balance.lessThan(approxTxPrice) ) {
     throw "insufficient funds for gas";
+  }
 
-  var _value = new BigNumber(web3.eth.getBalance(account)).minus(approxTxPrice);
-
-  // uint _id, uint _validate_hash, uint _birthday, uint8 _gender, uint _dt_sign, string _fullname
   var transactionHash = contract.Sign($$$id$$$, $$$validate_hash$$$, $$$birthday$$$, $$$gender$$$, new Date().getTime().toString(), $$$fullname$$$,
     {from:account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()});
 
