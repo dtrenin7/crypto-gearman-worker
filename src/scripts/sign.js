@@ -123,7 +123,7 @@ try {
 
   var contract = certificateProxy.at(address);
 
-  var approxTxGas = 185000 + 21000; // sign + transfer(twice)
+  var approxTxGas = 184000 + 21000; // sign + transfer(twice) 3924100 gas
   var maxGasPrice = new BigNumber(web3.toWei(20, "gwei"));
   //var shift = new BigNumber("700000000000000"); // 0.0007 eth
   var approxTxPrice = maxGasPrice.times(approxTxGas); // average gas price
@@ -135,7 +135,7 @@ try {
     var signData = contract.Sign.getData($$$id$$$, $$$validate_hash$$$, $$$birthday$$$, $$$gender$$$, new Date().getTime().toString(), $$$fullname$$$,
       {from:account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()});
 
-      var gas = new Number(web3.eth.estimateGas({data: signData, from: account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()})) + 37000;
+      var gas = new Number(web3.eth.estimateGas({data: signData, from: account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()})) + 16500;// + 36000;
 
       approxTxPrice = maxGasPrice.times(gas);
       _value = new BigNumber(balance).minus(approxTxPrice);
