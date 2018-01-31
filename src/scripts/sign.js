@@ -138,7 +138,7 @@ try {
       var gas = new Number(web3.eth.estimateGas({data: signData, from: account, to:address, value:_value.toString(), gas:approxTxGas, gasPrice:maxGasPrice.toString()}));// + 15500;
       console.log("ESTIMATED: " + gas);
 
-      approxTxPrice = maxGasPrice.times(gas).plus(new BigNumber("322000000000000"));
+      approxTxPrice = maxGasPrice.times(gas).plus(new BigNumber("312440000000000"));  // estimateGas() returns always more than real transaction costs
       _value = new BigNumber(balance).minus(approxTxPrice);
   }
   catch(e) {
